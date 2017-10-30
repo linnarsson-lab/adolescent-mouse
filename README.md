@@ -73,11 +73,35 @@ Argument|Effect
 `--paths-samples /data/proj/chromium/loom_samples/` | a configuration of the `paths` object, setting the sample path
 `--paths-build ~/build_20171027/` | a configuration of the `paths` object, setting the build path
 
+**Note**: You can add the `--workers 20` to use 20 cores (useful when running on the server). This will significantly speed up the pipeline, because luigi will automatically figure out which tasks can be run in parallel.
 
 
+## Running level 0 analysis
 
+Level 0 consists in pooling raw samples by tissue according to the `pooling_specification.tab` file, and classifying major cell classes using the `classifier.pickle` pre-trained classifier. Optionally, you can train a new classifier.
 
+Task(args)|Purpose
+----|-----
+`TrainClassifier`|Train a new classifier, and create a `classifier.pickle` file
+`PrepareTissuePool(tissue)`|Prepare a pool of the samples corresponding to `tissue`
 
+You will normally not need to run level 0 alone, but it will be triggered by running a level 1 analysis.
+
+## Running level 1 analysis
+
+Level 1 performs manifold learning, clustering and annotation by tissue.
+
+Task(args)|Purpose|Depends on
+----|-----|----
+`ExportL1(tissue)`| Export the results in a folder | `ClusterL1`, `AggregateL1`
+`AggregateL1(tissue)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `Clusterl1`
+`ClusterL1(tissue)`| Manifold learning and clustering | `PrepareTissuePool`
+
+Example:
+
+```
+luigi --local-scheduler --module adolescent_mouse ExportL1 --tissue Hippocampus --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+```
 
 
 
