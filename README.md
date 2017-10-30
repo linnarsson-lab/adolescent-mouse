@@ -94,7 +94,7 @@ Level 1 performs manifold learning, clustering and annotation by tissue.
 Task(args)|Purpose|Output|Depends on
 ----|-----|----|----
 `ExportL1(tissue)`| Export the results | `L1_{tissue}_exported` | `ClusterL1`, `AggregateL1`
-`AggregateL1(tissue)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `L1_{tissue}.agg.loom` | `Clusterl1`
+`AggregateL1(tissue)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `L1_{tissue}.agg.loom` | `ClusterL1`
 `ClusterL1(tissue)`| Manifold learning and clustering | `L1_{tissue}.loom` | `PrepareTissuePool`
 
 Example:
@@ -104,4 +104,22 @@ luigi --local-scheduler --module adolescent_mouse ExportL1 --tissue Hippocampus 
 ```
 
 
+## Running level 2 analysis
+
+Level 2 performs manifold learning, clustering and annotation by major class and (for neurons only) tissue. The major classes (as determined by the level 0 classifier) are: `Astrocytes`, `Ependymal`, `Vascular`, `Immune`, `Oligos`, `PeripheralGlia` and `Neurons`.
+
+Task(args)|Purpose|Output|Depends on
+----|-----|----|----
+`ExportL2(major_class, tissue)`| Export the results | `L2_{major_class}_{tissue}_exported` | `FilterL2`, `AggregateL2`
+`FilterL2(major_class, tissue)`| Filter to remove bad clusters | `L2_{major_class}_{tissue}.filtered.loom` | `ClusterL2`
+`AggregateL2(major_class, tissue)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `L2_{major_class}_{tissue}.agg.loom` | `FilterL2`
+`ClusterL2(major_class, tissue)`| Manifold learning and clustering | `L2_{major_class}_{tissue}.loom` | `ClusterL1(tissue)`
+
+**Note:** For classes other than `Neurons`, use `All` as tissue name.
+
+Example:
+
+```
+luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Neurons --tissue Hippocampus --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+```
 
