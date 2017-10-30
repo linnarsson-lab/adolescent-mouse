@@ -91,11 +91,11 @@ You will normally not need to run level 0 alone, but it will be triggered by run
 
 Level 1 performs manifold learning, clustering and annotation by tissue.
 
-Task(args)|Purpose|Depends on
-----|-----|----
-`ExportL1(tissue)`| Export the results in folder `L1_{tissue}_exported` | `ClusterL1`, `AggregateL1`
-`AggregateL1(tissue)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `Clusterl1`
-`ClusterL1(tissue)`| Manifold learning and clustering | `PrepareTissuePool`
+Task(args)|Purpose|Output|Depends on
+----|-----|----|----
+`ExportL1(tissue)`| Export the results | `L1_{tissue}_exported` | `ClusterL1`, `AggregateL1`
+`AggregateL1(tissue)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `L1_{tissue}.agg.loom` | `Clusterl1`
+`ClusterL1(tissue)`| Manifold learning and clustering | `L1_{tissue}.loom` | `PrepareTissuePool`
 
 Example:
 
