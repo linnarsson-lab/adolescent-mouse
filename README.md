@@ -123,3 +123,40 @@ Example:
 luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Neurons --tissue Hippocampus --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
 ```
 
+
+## Running level 3 analysis
+
+Level 3 performs manifold learning, clustering and annotation (of neurons only) by regional and neurotransmitter target categories. The targets are: 
+```    
+	SpinalCord_Inhibitory
+	SpinalCord_Excitatory
+	Olfactory_Inhibitory
+	Enteric_Neurons
+	Sensory_Neurons
+	Sympathetic_Neurons	
+	Hypothalamus_Peptidergic
+	Hindbrain_Inhibitory
+	Hindbrain_Excitatory
+	Brain_Neuroblasts
+	Forebrain_Inhibitory
+	Forebrain_Excitatory
+	DiMesencephalon_Inhibitory
+	DiMesencephalon_Excitatory
+	Brain_Granule
+	Brain_CholinergicMonoaminergic
+	Striatum_MSN
+```
+Task(args)|Purpose|Output|Depends on
+----|-----|----|----
+`ExportL3(target)`| Export the results | `L3_{target}_exported` | `ClusterL3`, `AggregateL3`
+`AggregateL3(target)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `L3_{target}.agg.loom` | `ClusterL3`
+`ClusterL3(target)`| Manifold learning and clustering | `L3_{target}.loom` | `ClusterL2`
+
+
+Example:
+
+```
+luigi --local-scheduler --module adolescent_mouse ExportL3 --target Sympathetic_Neurons --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+```
+
+
