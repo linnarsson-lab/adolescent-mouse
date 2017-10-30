@@ -52,7 +52,7 @@ Furthermore, you need a file in the current directory (typically, `adolescent-mo
 
 Samples with `QC == FAILED` will be ignored for all analyses.
 
-## Running the pipeline (example)
+## Running the pipeline (example: level 2 astrocytes)
 
 1. Create a folder to hold the output of the build, e.g. `~/build_20171027`.
 
@@ -75,6 +75,14 @@ Argument|Effect
 
 **Note**: You can add the `--workers 20` to use 20 cores (useful when running on the server). This will significantly speed up the pipeline, because luigi will automatically figure out which tasks can be run in parallel.
 
+
+## Running everything
+
+The following command runs all levels of the analysis and exports the results at every level:
+
+```
+luigi --local-scheduler --module adolescent_mouse Level1234Adolescent --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+```
 
 ## Running level 0 analysis
 
@@ -158,5 +166,26 @@ Example:
 ```
 luigi --local-scheduler --module adolescent_mouse ExportL3 --target Sympathetic_Neurons --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
 ```
+
+
+
+
+## Running level 4 analysis
+
+Level 4 pools all cells into a single file, and performs aggregation and visualization. 
+
+Task(args)|Purpose|Output|Depends on
+----|-----|----|----
+`ExportL4`| Export the results | `L4_All_exported` | `PoolL4`, `AggregateL4`
+`AggregateL4`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `L4_All.agg.loom` | `PoolL4`
+`PoolL4`| Pool all level 3 (neurons) and level 2 (non-neurons) cells | `L4_All.loom` | `ClusterL3, FilterL2`
+
+
+Example:
+
+```
+luigi --local-scheduler --module adolescent_mouse ExportL4 --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+```
+
 
 
