@@ -10,6 +10,7 @@ import luigi
 import scipy.cluster.hierarchy as hierarchy
 import numpy_groupies.aggregate_numpy as npg
 import scipy.cluster.hierarchy as hc
+import adolescent_mouse as am
 
 
 class AggregateL2(luigi.Task):
@@ -22,10 +23,10 @@ class AggregateL2(luigi.Task):
 	n_auto_genes = luigi.IntParameter(default=6)
 
 	def requires(self) -> List[luigi.Task]:
-		return cg.FilterL2(tissue=self.tissue, major_class=self.major_class)
+		return am.FilterL2(tissue=self.tissue, major_class=self.major_class)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L2_" + self.major_class + "_" + self.tissue + ".agg.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L2_" + self.major_class + "_" + self.tissue + ".agg.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -38,7 +39,7 @@ class AggregateL2(luigi.Task):
 				logging.info(f"Cluster {ix} score {score:.1f}")
 
 			logging.info("Computing auto-annotation")
-			aa = cg.AutoAnnotator(root=cg.paths().autoannotation)
+			aa = cg.AutoAnnotator(root=am.paths().autoannotation)
 			aa.annotate_loom(dsagg)
 			aa.save_in_loom(dsagg)
 

@@ -5,6 +5,7 @@ import pickle
 import loompy
 import numpy as np
 import cytograph as cg
+import adolescent_mouse as am
 import luigi
 
 
@@ -14,12 +15,12 @@ class TrainClassifier(luigi.Task):
 	"""
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().samples, "classified", "classifier.pickle"))
+		return luigi.LocalTarget(os.path.join(am.paths().samples, "classified", "classifier.pickle"))
 
 	def run(self) -> None:
 		with self.output().temporary_path() as fname:
 			logging.info("Retraining classifier")
-			pathname = os.path.join(cg.paths().samples, "classified")
+			pathname = os.path.join(am.paths().samples, "classified")
 			clf = cg.Classifier(pathname, n_per_cluster=100)
 			clf.generate()
 			ds_training = loompy.connect(os.path.join(pathname, "classified.loom"))

@@ -6,6 +6,7 @@ import loompy
 import numpy as np
 import cytograph as cg
 import luigi
+import adolescent_mouse as am
 
 
 class Level12Adolescent(luigi.WrapperTask):
@@ -17,8 +18,8 @@ class Level12Adolescent(luigi.WrapperTask):
 		tissues = cg.PoolSpec().tissues_for_project("Adolescent")
 		classes = ["Oligos", "Ependymal", "Astrocytes", "Vascular", "Immune", "PeripheralGlia"]  # "Excluded"]
 		for tissue in tissues:
-			yield cg.ExportL1(tissue=tissue)
-			yield cg.ExportL2(tissue=tissue, major_class="Neurons")
+			yield am.ExportL1(tissue=tissue)
+			yield am.ExportL2(tissue=tissue, major_class="Neurons")
 
 		for cls in classes:
-			yield cg.ExportL2(tissue="All", major_class=cls)
+			yield am.ExportL2(tissue="All", major_class=cls)

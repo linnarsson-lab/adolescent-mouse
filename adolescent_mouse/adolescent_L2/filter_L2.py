@@ -9,6 +9,7 @@ import luigi
 import numpy_groupies.aggregate_numpy as npg
 import scipy.stats
 import tempfile
+import adolescent_mouse as am
 
 
 class FilterL2(luigi.Task):
@@ -19,10 +20,10 @@ class FilterL2(luigi.Task):
 	tissue = luigi.Parameter(default="All")
 
 	def requires(self) -> luigi.Task:
-		return cg.ClusterL2(major_class=self.major_class, tissue=self.tissue)
+		return am.ClusterL2(major_class=self.major_class, tissue=self.tissue)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L2_" + self.major_class + "_" + self.tissue + ".filtered.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L2_" + self.major_class + "_" + self.tissue + ".filtered.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -95,7 +96,7 @@ class FilterL2(luigi.Task):
 			d = dict(zip(retain, np.arange(len(set(retain)) + 1)))
 			new_clusters = np.array([d[x] if x in d else -1 for x in ds.Clusters])
 			logging.info(f"Keeping {cells.shape[0]} of {ds.shape[1]} cells")
-			for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1, batch_size=cg.memory().axis1):
+			for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
 				ca = {k: v[selection] for k, v in ds.col_attrs.items()}
 				ca["Clusters"] = new_clusters[selection]
 				if dsout is None:

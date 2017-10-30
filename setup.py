@@ -1,10 +1,10 @@
 from setuptools import setup, find_packages
 
 __version__ = "0.0.0"
-exec(open('cytograph/_version.py').read())
+exec(open('adolescent_mouse/_version.py').read())
 
 setup(
-	name="cytograph",
+	name="adolescent-mouse",
 	version=__version__,
 	packages=find_packages(),
 	install_requires=[
@@ -13,14 +13,11 @@ setup(
 		'scikit-learn',
 		'scipy',
 		'networkx',
-		'python-louvain',
+		'cytograph',
 		'luigi',
-		'hdbscan',
-		'pyyaml',
 		'polo',
 		'numpy-groupies'
 	],
-	dependency_links=['http://github.com/linnarsson-lab/numpy-groupies/tarball/master#egg=numpy_groupies'],
 	
 	# metadata
 	author="Linnarsson Lab",

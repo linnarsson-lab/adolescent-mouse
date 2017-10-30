@@ -9,6 +9,7 @@ import cytograph as cg
 import luigi
 import numpy_groupies.aggregate_numpy as npg
 import scipy.stats
+import adolescent_mouse as am
 
 
 class PoolL4(luigi.Task):
@@ -36,12 +37,12 @@ class PoolL4(luigi.Task):
 
 		classes = ["Oligos", "Astrocytes", "Ependymal", "Vascular", "Immune", "PeripheralGlia"]
 		for target in targets:
-			yield cg.ClusterL3(target=target)
+			yield am.ClusterL3(target=target)
 		for cl in classes:
-			yield cg.FilterL2(major_class=cl, tissue="All")
+			yield am.FilterL2(major_class=cl, tissue="All")
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L4_All.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L4_All.loom"))
 		
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -59,7 +60,7 @@ class PoolL4(luigi.Task):
 					accessions = ds.row_attrs["Accession"]
 				logging.info(f"Adding {ds.shape[1]} cells from {sample}")
 				ordering = np.where(ds.row_attrs["Accession"][None, :] == accessions[:, None])[1]
-				for (ix, selection, vals) in ds.batch_scan(axis=1, batch_size=cg.memory().axis1):
+				for (ix, selection, vals) in ds.batch_scan(axis=1):
 					ca = {}
 					for key in ds.col_attrs:
 						ca[key] = ds.col_attrs[key][selection]

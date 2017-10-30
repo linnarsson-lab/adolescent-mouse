@@ -10,6 +10,7 @@ import luigi
 import scipy.cluster.hierarchy as hierarchy
 import numpy_groupies.aggregate_numpy as npg
 import scipy.cluster.hierarchy as hc
+import adolescent_mouse as am
 
 
 class AggregateL3(luigi.Task):
@@ -21,10 +22,10 @@ class AggregateL3(luigi.Task):
 	n_auto_genes = luigi.IntParameter(default=6)
 
 	def requires(self) -> List[luigi.Task]:
-		return cg.ClusterL3(target=self.target)
+		return am.ClusterL3(target=self.target)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L3_" + self.target + ".agg.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L3_" + self.target + ".agg.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -43,7 +44,7 @@ class AggregateL3(luigi.Task):
 
 			logging.info("Computing auto-auto-annotation")
 			n_clusters = dsagg.shape[1]
-			(selected, selectivity, specificity, robustness) = cg.AutoAutoAnnotator(n_genes=self.n_auto_genes, root=cg.paths().autoannotation).fit(dsagg)
+			(selected, selectivity, specificity, robustness) = cg.AutoAutoAnnotator(n_genes=self.n_auto_genes, root=am.paths().autoannotation).fit(dsagg)
 			dsagg.set_attr("MarkerGenes", np.array([" ".join(ds.Gene[selected[:, ix]]) for ix in np.arange(n_clusters)]), axis=1)
 			np.set_printoptions(precision=1, suppress=True)
 			dsagg.set_attr("MarkerSelectivity", np.array([str(selectivity[:, ix]) for ix in np.arange(n_clusters)]), axis=1)

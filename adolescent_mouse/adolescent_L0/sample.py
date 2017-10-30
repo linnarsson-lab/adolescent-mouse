@@ -3,6 +3,7 @@ import os
 import logging
 import luigi
 import cytograph as cg
+import adolescent_mouse as am
 
 
 class Sample(luigi.ExternalTask):
@@ -14,13 +15,13 @@ class Sample(luigi.ExternalTask):
     sample = luigi.Parameter()
 
     def output(self) -> luigi.LocalTarget:
-        if cg.paths().use_velocyto:
-            fname = os.path.join(cg.paths().samples, self.sample, "velocyto", self.sample + ".loom")
+        if am.paths().use_velocyto:
+            fname = os.path.join(am.paths().samples, self.sample, "velocyto", self.sample + ".loom")
             return luigi.LocalTarget(fname)
         else:
-            fname = os.path.join(cg.paths().samples, self.sample, self.sample + ".loom")
+            fname = os.path.join(am.paths().samples, self.sample, self.sample + ".loom")
             if os.path.exists(fname):
                 return luigi.LocalTarget(fname)
             else:
-                fname = os.path.join(cg.paths().samples, self.sample + ".loom")
+                fname = os.path.join(am.paths().samples, self.sample + ".loom")
                 return luigi.LocalTarget(fname)

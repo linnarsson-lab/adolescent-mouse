@@ -22,6 +22,7 @@ from scipy.stats import ks_2samp
 import networkx as nx
 import hdbscan
 from sklearn.cluster import DBSCAN
+import adolescent_mouse as am
 
 
 class ClusterL1(luigi.Task):
@@ -36,10 +37,10 @@ class ClusterL1(luigi.Task):
 	layer = luigi.Parameter(default=None)
 
 	def requires(self) -> luigi.Task:
-		return cg.PrepareTissuePool(tissue=self.tissue)
+		return am.PrepareTissuePool(tissue=self.tissue)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L1_" + self.tissue + ".loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L1_" + self.tissue + ".loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -47,7 +48,7 @@ class ClusterL1(luigi.Task):
 			ds = loompy.connect(self.input().fn)
 			dsout: loompy.LoomConnection = None
 			logging.info("Removing invalid cells")
-			for (ix, selection, vals) in ds.batch_scan_layers(cells=np.where(ds.col_attrs["_Valid"] == 1)[0], layers=ds.layer.keys(), batch_size=cg.memory().axis1, axis=1):
+			for (ix, selection, vals) in ds.batch_scan_layers(cells=np.where(ds.col_attrs["_Valid"] == 1)[0], layers=ds.layer.keys(), axis=1):
 				ca = {key: val[selection] for key, val in ds.col_attrs.items()}
 				if dsout is None:
 					# NOTE Loompy Create should support multilayer !!!!
@@ -84,23 +85,3 @@ class ClusterL1(luigi.Task):
 			cg.Merger(min_distance=0.2).merge(ds)
 			logging.info(f"Merged to {ds.col_attrs['Clusters'].max() + 1} clusters")
 			ds.close()
-
-			# dsout = loompy.connect(out_file)
-			# ml = cg.ManifoldLearning(n_genes=self.n_genes, gtsne=self.gtsne, alpha=self.alpha, filter_cellcycle=self.filter_cellcycle, layer=self.layer)
-			# (knn, mknn, tsne) = ml.fit(dsout)
-
-			# dsout.set_edges("KNN", knn.row, knn.col, knn.data, axis=1)
-			# dsout.set_edges("MKNN", mknn.row, mknn.col, mknn.data, axis=1)
-			# dsout.set_attr("_X", tsne[:, 0], axis=1)
-			# dsout.set_attr("_Y", tsne[:, 1], axis=1)
-
-			# min_pts = 10
-			# eps_pct = 90
-			# if self.tissue == "Sympathetic":
-			# 	min_pts = 10
-			# 	eps_pct = 80
-			# cls = cg.Clustering(method=cg.cluster().method, outliers=not cg.cluster().no_outliers, min_pts=min_pts, eps_pct=eps_pct)
-			# labels = cls.fit_predict(dsout)
-			# dsout.set_attr("Clusters", labels, axis=1)
-			# n_labels = np.max(labels) + 1
-			# dsout.close()

@@ -10,63 +10,8 @@ import luigi
 import numpy_groupies.aggregate_numpy as npg
 import scipy.stats
 import tempfile
+import adolescent_mouse as am
 
-
-# params = {  # eps_pct and min_pts
-# 	"L2_Neurons_Amygdala": [60, 40],
-# 	"L2_Neurons_Cerebellum": [80, 20],
-# 	"L2_Neurons_Cortex1": [70, 20],
-# 	"L2_Neurons_Cortex2": [50, 40],
-# 	"L2_Neurons_Cortex3": [60, 20],
-# 	"L2_Neurons_DRG": [75, 10],
-# 	"L2_Neurons_Enteric": [60, 10],
-# 	"L2_Neurons_Hippocampus": [90, 10],
-# 	"L2_Neurons_Hypothalamus": [75, 20],
-# 	"L2_Neurons_Medulla": [60, 20],
-# 	"L2_Neurons_MidbrainDorsal": [60, 20],
-# 	"L2_Neurons_MidbrainVentral": [60, 20],
-# 	"L2_Neurons_Olfactory": [70, 40],
-# 	"L2_Neurons_Pons": [60, 20],
-# 	"L2_Neurons_SpinalCord": [90, 10],
-# 	"L2_Neurons_StriatumDorsal": [80, 40],
-# 	"L2_Neurons_StriatumVentral": [80, 20],
-# 	"L2_Neurons_Sympathetic": [60, 10],
-# 	"L2_Neurons_Thalamus": [75, 20],
-# 	"L2_Oligos_All": [95, 500],
-# 	"L2_AstroEpendymal_All": [80, 40],
-# 	"L2_Blood_All": [70, 20],
-# 	"L2_Immune_All": [70, 70],
-# 	"L2_PeripheralGlia_All": [80, 20],
-# 	"L2_Vascular_All": [80, 100]
-# }
-
-# params = {  # eps_pct and min_pts
-# 	"L2_Neurons_Amygdala": [85, 10],
-# 	"L2_Neurons_Cerebellum": [90, 10],
-# 	"L2_Neurons_Cortex1": [80, 10],
-# 	"L2_Neurons_Cortex2": [75, 10],
-# 	"L2_Neurons_Cortex3": [85, 10],
-# 	"L2_Neurons_DRG": [70, 10],
-# 	"L2_Neurons_Enteric": [60, 10],
-# 	"L2_Neurons_Hippocampus": [90, 10],
-# 	"L2_Neurons_Hypothalamus": [80, 10],
-# 	"L2_Neurons_Medulla": [70, 10],
-# 	"L2_Neurons_MidbrainDorsal": [90, 10],
-# 	"L2_Neurons_MidbrainVentral": [80, 10],
-# 	"L2_Neurons_Olfactory": [80, 10],
-# 	"L2_Neurons_Pons": [75, 10],
-# 	"L2_Neurons_SpinalCord": [90, 10],
-# 	"L2_Neurons_StriatumDorsal": [90, 10],
-# 	"L2_Neurons_StriatumVentral": [85, 10],
-# 	"L2_Neurons_Sympathetic": [60, 10],
-# 	"L2_Neurons_Thalamus": [90, 10],
-# 	"L2_Oligos_All": [95, 500],
-# 	"L2_AstroEpendymal_All": [80, 40],
-# 	"L2_Blood_All": [70, 20],
-# 	"L2_Immune_All": [70, 70],
-# 	"L2_PeripheralGlia_All": [80, 20],
-# 	"L2_Vascular_All": [90, 10]
-# }
 
 params = {  # eps_pct and min_pts
     "L2_Neurons_Amygdala": [80, 10],
@@ -114,12 +59,12 @@ class ClusterL2(luigi.Task):
 	def requires(self) -> luigi.Task:
 		tissues = cg.PoolSpec().tissues_for_project("Adolescent")
 		if self.tissue == "All":
-			return [cg.ClusterL1(tissue=tissue) for tissue in tissues]
+			return [am.ClusterL1(tissue=tissue) for tissue in tissues]
 		else:
-			return [cg.ClusterL1(tissue=self.tissue)]
+			return [am.ClusterL1(tissue=self.tissue)]
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L2_" + self.major_class + "_" + self.tissue + ".loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L2_" + self.major_class + "_" + self.tissue + ".loom"))
 		
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -152,7 +97,7 @@ class ClusterL2(luigi.Task):
 					accessions = ds.row_attrs["Accession"]
 				
 				ordering = np.where(ds.row_attrs["Accession"][None, :] == accessions[:, None])[1]
-				for (ix, selection, vals) in ds.batch_scan(cells=np.array(cells), axis=1, batch_size=cg.memory().axis1):
+				for (ix, selection, vals) in ds.batch_scan(cells=np.array(cells), axis=1):
 					ca = {}
 					for key in ds.col_attrs:
 						ca[key] = ds.col_attrs[key][selection]

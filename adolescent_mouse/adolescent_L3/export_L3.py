@@ -8,6 +8,7 @@ import numpy as np
 import networkx as nx
 import cytograph as cg
 import luigi
+import adolescent_mouse as am
 
 
 class ExportL3(luigi.Task):
@@ -19,12 +20,12 @@ class ExportL3(luigi.Task):
 
 	def requires(self) -> List[luigi.Task]:
 		return [
-			cg.AggregateL3(target=self.target),
-			cg.ClusterL3(target=self.target)
+			am.AggregateL3(target=self.target),
+			am.ClusterL3(target=self.target)
 		]
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L3_" + self.target + "_exported"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L3_" + self.target + "_exported"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -34,7 +35,7 @@ class ExportL3(luigi.Task):
 				os.mkdir(out_dir)
 			dsagg = loompy.connect(self.input()[0].fn)
 			logging.info("Computing auto-annotation")
-			aa = cg.AutoAnnotator(root=cg.paths().autoannotation)
+			aa = cg.AutoAnnotator(root=am.paths().autoannotation)
 			aa.annotate_loom(dsagg)
 			aa.save_in_loom(dsagg)
 

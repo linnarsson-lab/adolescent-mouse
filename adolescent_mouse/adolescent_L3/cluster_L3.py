@@ -10,6 +10,7 @@ import cytograph as cg
 import luigi
 import numpy_groupies.aggregate_numpy as npg
 import scipy.stats
+import adolescent_mouse as am
 
 
 params = {  # eps_pct and min_pts
@@ -47,11 +48,11 @@ class ClusterL3(luigi.Task):
 				if sendto == self.target:
 					if tissue in tissues:
 						continue
-					yield [cg.FilterL2(tissue=tissue, major_class="Neurons"), cg.AggregateL2(tissue=tissue, major_class="Neurons")]
+					yield [am.FilterL2(tissue=tissue, major_class="Neurons"), am.AggregateL2(tissue=tissue, major_class="Neurons")]
 					tissues.append(tissue)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L3_" + self.target + ".loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L3_" + self.target + ".loom"))
 		
 	def run(self) -> None:
 		logging = cg.logging(self, True)
@@ -124,7 +125,7 @@ class ClusterL3(luigi.Task):
 				if len(cells) > 0:
 					cells = np.sort(np.array(cells))
 					cells_found = True
-					for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1, batch_size=cg.memory().axis1):
+					for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
 						ca = {}
 						for key in ds.col_attrs:
 							ca[key] = ds.col_attrs[key][selection]

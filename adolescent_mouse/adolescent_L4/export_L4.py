@@ -8,6 +8,7 @@ import networkx as nx
 import cytograph as cg
 import luigi
 from scipy.spatial.distance import squareform, pdist
+import adolescent_mouse as am
 
 
 class ExportL4(luigi.Task):
@@ -17,10 +18,10 @@ class ExportL4(luigi.Task):
 	n_markers = luigi.IntParameter(default=10)
 
 	def requires(self) -> List[luigi.Task]:
-		return [cg.AggregateL4(), cg.PoolL4()]
+		return [am.AggregateL4(), am.PoolL4()]
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(cg.paths().build, "L4_All_exported"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L4_All_exported"))
 
 	def run(self) -> None:
 		logging = cg.logging(self, True)
