@@ -64,17 +64,14 @@ luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Astrocy
 
 This will run the `ExportL2` task, and all of its dependencies as needed. The command-line arguments are as follows:
 
-`--local-scheduler` tells luigi to run the pipeline directly, not in client/server mode.
-
-`--module adolescent_mouse ExportL2` tells luigi to run the `ExportL2` task in the Python module `adolescent_mouse`.
-
-`--major-class Astrocytes` is an argument to `ExportL2` indicating which cell class we want to run
-
-`--tissue All` is an argument to `ExportL2` indicating that we want astrocytes from all tissues
-
-`--paths-samples /data/proj/chromium/loom_samples/` is a configuration of the `paths` object, setting the sample path
-
-`--paths-build ~/build_20171027/` is a configuration of the `paths` object, setting the build path
+Argument|Effect
+----|----
+`--local-scheduler` |run the pipeline directly, not in client/server mode.
+`--module adolescent_mouse ExportL2`| run the `ExportL2` task in the Python module `adolescent_mouse`.
+`--major-class Astrocytes`| an argument to `ExportL2` indicating which cell class we want to run
+`--tissue All` |an argument to `ExportL2` indicating that we want astrocytes from all tissues
+`--paths-samples /data/proj/chromium/loom_samples/` | a configuration of the `paths` object, setting the sample path
+`--paths-build ~/build_20171027/` | a configuration of the `paths` object, setting the build path
 
 
 
