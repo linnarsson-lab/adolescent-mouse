@@ -48,6 +48,16 @@ loom_samples/
 
 **Note:** On monod, a samples folder is available at `/data/proj/chromium/loom_samples`. Please use this directly instead of making a copy.
 
+**Note:** Instead of sample files directly in the top-level folder, sample files can also be in subfolders named after the sample ID, or in a sub-folder of such a subfolder, named `velocyto`. Thus, these are all equivalent:
+
+```
+10X43_2.loom
+10X43_2/10X43_2.loom
+10X43_2/velocyto/10X43_2.loom
+```
+
+If it exists, the sample in `velocyto` will take precedence.
+
 Furthermore, you need a file in the current directory (typically, `adolescent-mouse`) named `pooling_specification.tab`, which gives a list of all the samples and their pool names. This file has four columns: *SampleID* (like `10X04_1`), *Pool* (like `Hippocampus`), *TimepointPool* (always `none`), *QC* (`OK` or `FAILED`), and *Project* (`Adolescent`). 
 
 Samples with `QC == FAILED` will be ignored for all analyses.
