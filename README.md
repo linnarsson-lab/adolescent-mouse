@@ -46,7 +46,7 @@ loom_samples/
         metadata.xlsx
 ```
 
-**Note:** On monod, a samples folder is available at `/data/proj/chromium/loom_samples`. Please use this directly instead of making a copy.
+**Note:** On monod, a samples folder is available at `/data/proj/chromium/`. Please use this directly instead of making a copy.
 
 **Note:** Instead of sample files directly in the top-level folder, sample files can also be in subfolders named after the sample ID, or in a sub-folder of such a subfolder, named `velocyto`. Thus, these are all equivalent:
 
@@ -69,7 +69,7 @@ Samples with `QC == FAILED` will be ignored for all analyses.
 2. Run `luigi`. For example:
 
 ```
-luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Astrocytes --tissue All --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Astrocytes --tissue All --paths-samples /data/proj/chromium/ --paths-build ~/build_20171027/ 
 ```
 
 This will run the `ExportL2` task, and all of its dependencies as needed. The command-line arguments are as follows:
@@ -91,7 +91,7 @@ Argument|Effect
 The following command runs all levels of the analysis and exports the results at every level:
 
 ```
-luigi --local-scheduler --module adolescent_mouse Level1234Adolescent --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+luigi --local-scheduler --module adolescent_mouse Level1234Adolescent --paths-samples /data/proj/chromium/l --paths-build ~/build_20171027/ 
 ```
 
 ## Rerunning parts of the pipeline
@@ -122,7 +122,7 @@ Task(args)|Purpose|Output|Depends on
 Example:
 
 ```
-luigi --local-scheduler --module adolescent_mouse ExportL1 --tissue Hippocampus --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+luigi --local-scheduler --module adolescent_mouse ExportL1 --tissue Hippocampus --paths-samples /data/proj/chromium/ --paths-build ~/build_20171027/ 
 ```
 
 
@@ -142,7 +142,7 @@ Task(args)|Purpose|Output|Depends on
 Example:
 
 ```
-luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Neurons --tissue Hippocampus --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Neurons --tissue Hippocampus --paths-samples /data/proj/chromium/ --paths-build ~/build_20171027/ 
 ```
 
 
@@ -178,7 +178,7 @@ Task(args)|Purpose|Output|Depends on
 Example:
 
 ```
-luigi --local-scheduler --module adolescent_mouse ExportL3 --target Sympathetic_Neurons --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+luigi --local-scheduler --module adolescent_mouse ExportL3 --target Sympathetic_Neurons --paths-samples /data/proj/chromium/ --paths-build ~/build_20171027/ 
 ```
 
 
@@ -198,7 +198,7 @@ Task(args)|Purpose|Output|Depends on
 Example:
 
 ```
-luigi --local-scheduler --module adolescent_mouse ExportL4 --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+luigi --local-scheduler --module adolescent_mouse ExportL4 --paths-samples /data/proj/chromium/ --paths-build ~/build_20171027/ 
 ```
 
 
