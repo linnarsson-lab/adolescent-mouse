@@ -62,6 +62,9 @@ Furthermore, you need a file in the current directory (typically, `adolescent-mo
 
 Samples with `QC == FAILED` will be ignored for all analyses.
 
+## Overview of the pipeline
+
+
 ## Running the pipeline (example: level 2 astrocytes)
 
 1. Create a folder to hold the output of the build, e.g. `~/build_20171027`.
