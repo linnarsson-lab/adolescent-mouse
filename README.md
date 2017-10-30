@@ -4,7 +4,7 @@ Analysis pipeline for the adolescent mouse nervous system project
 
 ## Installation
 
-1. Install [cytograph](https://github.com/linnarsson-lab/cytograph) and [loompy](https://github.com/linnarsson-lab/loompy)
+1. Install [luigi](https://luigi.readthedocs.io/en/stable/), [cytograph](https://github.com/linnarsson-lab/cytograph) and [loompy](https://github.com/linnarsson-lab/loompy)
 
 2. Clone the repository to your computer:
 
@@ -48,7 +48,33 @@ loom_samples/
 
 **Note:** On monod, a samples folder is available at `/data/proj/chromium/loom_samples`. Please use this directly instead of making a copy.
 
-Furthermore, you need a file in the current directory (typically, `adolescent-mouse`) named `pooling_specification.tab`, which gives a list of all the samples and their pool names. This file has four columns: *SampleID* (like `10X04_1`), *Pool* (like `Hippocampus`), *TimepointPool* (always `none`), *QC* (`OK` or `FAILED`), and *Project* (`Adolescent`). Samples with `QC == FAILED` will be ignored.
+Furthermore, you need a file in the current directory (typically, `adolescent-mouse`) named `pooling_specification.tab`, which gives a list of all the samples and their pool names. This file has four columns: *SampleID* (like `10X04_1`), *Pool* (like `Hippocampus`), *TimepointPool* (always `none`), *QC* (`OK` or `FAILED`), and *Project* (`Adolescent`). 
+
+Samples with `QC == FAILED` will be ignored for all analyses.
+
+## Running the pipeline (example)
+
+1. Create a folder to hold the output of the build, e.g. `~/build_20171027`.
+
+2. Run `luigi`. For example:
+
+```
+luigi --local-scheduler --module adolescent_mouse ExportL2 --major-class Astrocytes --tissue All --paths-samples /data/proj/chromium/loom_samples/ --paths-build ~/build_20171027/ 
+```
+
+This will run the `ExportL2` task, and all of its dependencies as needed. The command-line arguments are as follows:
+
+`--local-scheduler` tells luigi to run the pipeline directly, not in client/server mode.
+`--module adolescent_mouse ExportL2` tells luigi to run the `ExportL2` task in the Python module `adolescent_mouse`.
+`--major-class Astrocytes` is an argument to `ExportL2` indicating which cell class we want to run
+`--tissue All` is an argument to `ExportL2` indicating that we want astrocytes from all tissues
+`--paths-samples /data/proj/chromium/loom_samples/` is a configuration of the `paths` object, setting the sample path
+`--paths-build ~/build_20171027/` is a configuration of the `paths` object, setting the build path
+
+
+
+
+
 
 
 
