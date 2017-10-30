@@ -96,7 +96,11 @@ luigi --local-scheduler --module adolescent_mouse Level1234Adolescent --paths-sa
 
 ## Rerunning parts of the pipeline
 
-To rerun only a subset of the pipeline, simply delete the files (or folders) you want regenerated, and rerun the pipeline. Luigi will figure out what needs to be done. Note, however, that luigi will start with the module you ask it to run, and work its way backward. For example, if you delete the `L1_Hippocampus.loom` file, but leave `L2_Neurons_Hippocampus.loom`, and ask luigi to run `ExportL2(tissue=Hippocampus,major_class=Neurons)`, then the `L1_Hippocampus.loom` file will not be generated because the result you asked for already exists. You can then either delete `L2_Neurons_Hippocampus.loom` or run `ExportL1(tissue=Hippocampus)` to force luigi to regenerate the file.
+To rerun only a subset of the pipeline, simply delete the files (or folders) you want regenerated, and rerun the pipeline. Luigi will figure out what needs to be done. 
+
+Note, however, that luigi will start with the module you ask it to run, and work its way backward. 
+
+For example, if you delete the `L1_Hippocampus.loom` file, but leave `L2_Neurons_Hippocampus.loom`, and ask luigi to run `ExportL2(tissue=Hippocampus,major_class=Neurons)`, then the `L1_Hippocampus.loom` file will not be generated because the result you asked for already exists. You can then either delete `L2_Neurons_Hippocampus.loom` or run `ExportL1(tissue=Hippocampus)` to force luigi to regenerate the file.
 
 ## Running level 0 analysis
 
