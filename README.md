@@ -93,7 +93,7 @@ Level 1 performs manifold learning, clustering and annotation by tissue.
 
 Task(args)|Purpose|Depends on
 ----|-----|----
-`ExportL1(tissue)`| Export the results in a folder | `ClusterL1`, `AggregateL1`
+`ExportL1(tissue)`| Export the results in folder `L1_{tissue}_exported` | `ClusterL1`, `AggregateL1`
 `AggregateL1(tissue)`| Aggregate by cluster, computing enrichment, trinarization and auto-annotation | `Clusterl1`
 `ClusterL1(tissue)`| Manifold learning and clustering | `PrepareTissuePool`
 
