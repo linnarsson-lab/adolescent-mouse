@@ -1,17 +1,10 @@
-# Loom
-loom_samples/
-loom_builds/
-bhtsne/bh_tsne
-
 # Mac
 *.DS_Store/
 test/
-bhtsne/bh_tsne
-
 .vscode/*
 
 # Byte-compiled / optimized / DLL files
-__pycache__/
+**/__pycache/
 *.py[cod]
 *$py.class
 
@@ -102,3 +95,5 @@ ENV/
 
 # mypy
 .mypy_cache
+adolescent_mouse/adolescent_L4/__pycache__/pool_L4.cpython-36.pyc
+adolescent_mouse/adolescent_L3/__pycache__/aggregate_L3.cpython-36.pyc

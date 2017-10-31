@@ -38,13 +38,13 @@ class AggregateL3(luigi.Task):
 				logging.info(f"Cluster {ix} score {score:.1f}")
 
 			logging.info("Computing auto-annotation")
-			aa = cg.AutoAnnotator()
+			aa = cg.AutoAnnotator(root=am.paths().autoannotation)
 			aa.annotate_loom(dsagg)
 			aa.save_in_loom(dsagg)
 
 			logging.info("Computing auto-auto-annotation")
 			n_clusters = dsagg.shape[1]
-			(selected, selectivity, specificity, robustness) = cg.AutoAutoAnnotator(n_genes=self.n_auto_genes, root=am.paths().autoannotation).fit(dsagg)
+			(selected, selectivity, specificity, robustness) = cg.AutoAutoAnnotator(n_genes=self.n_auto_genes).fit(dsagg)
 			dsagg.set_attr("MarkerGenes", np.array([" ".join(ds.Gene[selected[:, ix]]) for ix in np.arange(n_clusters)]), axis=1)
 			np.set_printoptions(precision=1, suppress=True)
 			dsagg.set_attr("MarkerSelectivity", np.array([str(selectivity[:, ix]) for ix in np.arange(n_clusters)]), axis=1)

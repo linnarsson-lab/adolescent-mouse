@@ -160,7 +160,7 @@ class ClusterL3(luigi.Task):
 			(eps_pct, min_pts) = (65, 20)
 			if "L3_" + self.target in params:
 				(eps_pct, min_pts) = params["L3_" + self.target]
-			logging.info(f"MKNN-Louvain with eps_pct {eps_pct}, min_pts {min_pts}")
+			logging.info(f"MKNN-Louvain with min_pts {min_pts}")
 			cls = cg.Clustering(method="mknn_louvain", eps_pct=eps_pct, min_pts=min_pts)
 			labels = cls.fit_predict(ds)
 			n_labels = len(set(labels))
@@ -354,6 +354,8 @@ pooling_schedule_L3 = {
 		("@CHOL", "Brain_CholinergicMonoaminergic"),
 		("@SER", "Brain_CholinergicMonoaminergic"),
 		("@DA", "Brain_CholinergicMonoaminergic"),
+		("@NOR", "Brain_CholinergicMonoaminergic"),
+		("@ADR", "Brain_CholinergicMonoaminergic"),
 		("@NIPC", "Brain_Neuroblasts"),
 		("@VGLUT1", "Hindbrain_Excitatory"),
 		("@VGLUT2", "Hindbrain_Excitatory"),

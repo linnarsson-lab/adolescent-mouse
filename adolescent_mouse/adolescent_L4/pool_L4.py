@@ -21,7 +21,10 @@ class PoolL4(luigi.Task):
 		targets = [
 			"SpinalCord_Inhibitory",
 			"SpinalCord_Excitatory",
-			"Peripheral_Neurons",
+			"Olfactory_Inhibitory",
+			"Enteric_Neurons",
+			"Sensory_Neurons",
+			"Sympathetic_Neurons",
 			"Hypothalamus_Peptidergic",
 			"Hindbrain_Inhibitory",
 			"Hindbrain_Excitatory",
@@ -34,7 +37,6 @@ class PoolL4(luigi.Task):
 			"Brain_CholinergicMonoaminergic",
 			"Striatum_MSN"
 		]
-
 		classes = ["Oligos", "Astrocytes", "Ependymal", "Vascular", "Immune", "PeripheralGlia"]
 		for target in targets:
 			yield am.ClusterL3(target=target)
