@@ -369,7 +369,7 @@ pooling_schedule_L3 = {
 		("@VGLUT3", "SpinalCord_Excitatory"),
 		("@GLY", "SpinalCord_Inhibitory"),
 		("@GABA", "SpinalCord_Inhibitory"),
-		("PSN", "Peripheral_Neurons"),
+		("PSN", "Sensory_Neurons"),
 		("*", "SpinalCord_Excitatory"),
 	],
 	"DRG": [

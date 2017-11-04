@@ -84,20 +84,34 @@ class ClusterL2(luigi.Task):
 
 				majority_labels = npg.aggregate(clusters, labels, func=mode).astype('str')
 
-				cells = []
+				temp = []
 				for ix in range(ds.shape[1]):
 					if labels[ix] == self.major_class and labels[ix] == majority_labels[clusters[ix]]:
-						cells.append(ix)
-				logging.info("Keeping " + str(len(cells)) + " cells with majority labels")
-				if len(cells) == 0:
+						temp.append(ix)
+				logging.info("Keeping " + str(len(temp)) + " cells with majority labels")
+				if len(temp) == 0:
 					continue
+
+				cells = np.array(temp)
+				if self.major_class == "Oligos":
+					# Special selection of cells for the oligo class, to reduce batch effect
+					enough_genes = ds.map((np.count_nonzero,), axis=1)[0] > 1000
+					has_pdgfra = ds[ds.Gene == "Pdgfra", :] > 0
+					has_meg3 = ds[ds.Gene == "Meg3", :] > 0
+					is_doublet = np.zeros(ds.shape[1], dtype='bool')
+					for g in ['Stmn2', 'Aqp4', 'Gja1', 'C1qc', 'Aif1', 'Cldn5', 'Fn1', 'Hbb-bt', 'Hbb-bh1', 'Hbb-bh2', 'Hbb-y', 'Hbb-bs', 'Hba-a1', 'Hba-a2', 'Hba-x']:
+						is_doublet = np.logical_or(is_doublet, ds[ds.Gene == g, :] > 0)
+					ok_cells = enough_genes & (~is_doublet) & (has_pdgfra | ~has_meg3)
+					cells = np.intersect1d(cells, np.where(ok_cells)[0])
+					if cells.shape[0] > 5000:
+						cells = np.random.choice(cells, 5000, False)
 
 				# Keep track of the gene order in the first file
 				if accessions is None:
 					accessions = ds.row_attrs["Accession"]
 				
 				ordering = np.where(ds.row_attrs["Accession"][None, :] == accessions[:, None])[1]
-				for (ix, selection, vals) in ds.batch_scan(cells=np.array(cells), axis=1):
+				for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
 					ca = {}
 					for key in ds.col_attrs:
 						ca[key] = ds.col_attrs[key][selection]
