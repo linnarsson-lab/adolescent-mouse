@@ -22,7 +22,7 @@ class AggregateL3(luigi.Task):
 	n_auto_genes = luigi.IntParameter(default=6)
 
 	def requires(self) -> List[luigi.Task]:
-		return am.ClusterL3(target=self.target)
+		return am.FilterL3(target=self.target)
 
 	def output(self) -> luigi.Target:
 		return luigi.LocalTarget(os.path.join(am.paths().build, "L3_" + self.target + ".agg.loom"))

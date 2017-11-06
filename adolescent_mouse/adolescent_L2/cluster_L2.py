@@ -127,7 +127,10 @@ class ClusterL2(luigi.Task):
 
 			logging.info("Learning the manifold")
 			ds = loompy.connect(out_file)
-			ml = cg.ManifoldLearning2(n_genes=self.n_genes, gtsne=self.gtsne, alpha=self.alpha)
+			if self.major_class == "Oligos":
+				ml = cg.ManifoldLearning2(n_genes=self.n_genes, alpha=self.alpha)
+			else:
+				ml = cg.ManifoldLearning2(n_genes=self.n_genes, gtsne=self.gtsne, alpha=self.alpha)
 			(knn, mknn, tsne) = ml.fit(ds)
 			ds.set_edges("KNN", knn.row, knn.col, knn.data, axis=1)
 			ds.set_edges("MKNN", mknn.row, mknn.col, mknn.data, axis=1)

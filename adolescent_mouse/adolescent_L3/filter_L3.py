@@ -64,11 +64,11 @@ class FilterL3(luigi.Task):
 				"L3_Hypothalamus_Peptidergic": [],
 				"L3_Hindbrain_Inhibitory": [],
 				"L3_Hindbrain_Excitatory": [],
-				"L3_Brain_Neuroblasts": [],
+				"L3_Brain_Neuroblasts": ["Vtn"],
 				"L3_Forebrain_Inhibitory": [],
-				"L3_Forebrain_Excitatory": [],
-				"L3_DiMesencephalon_Inhibitory": [],
-				"L3_DiMesencephalon_Excitatory": [],
+				"L3_Forebrain_Excitatory": ["Mog"],
+				"L3_DiMesencephalon_Inhibitory": ["Cd9", "Aqp4"],
+				"L3_DiMesencephalon_Excitatory": ["Aqp4"],
 				"L3_Brain_Granule": [],
 				"L3_Brain_CholinergicMonoaminergic": [],
 				"L3_Striatum_MSN": []
@@ -76,18 +76,13 @@ class FilterL3(luigi.Task):
 			for lbl in range(n_labels):
 				# Clusters with markers of other major class
 				n_cells_in_cluster = (ds.Clusters == lbl).sum()
-				for cls in nix_genes.keys():
-					if cls == self.major_class:
-						continue
-					for gene in nix_genes[cls]:
-						if gene not in ds.Gene:
-							logging.warn("Couldn't use '" + gene + "' to nix clusters")
-						gix = np.where(ds.Gene == gene)[0][0]
-						if np.count_nonzero(ds[gix, :][ds.Clusters == lbl]) > 0.5 * n_cells_in_cluster:
-							# But let it slide if this marker is abundant in the whole tissue
-							if np.count_nonzero(ds[gix, :]) < 0.25 * ds.shape[1]:
-								logging.info("Nixing cluster {} because {} was detected".format(lbl, gene))
-								remove.append(lbl)
+				for gene in nix_genes[self.target]:
+					if gene not in ds.Gene:
+						logging.warn("Couldn't use '" + gene + "' to nix clusters")
+					gix = np.where(ds.Gene == gene)[0][0]
+					if trinaries[gix, lbl] > 0.95:
+						logging.info("Nixing cluster {} because {} was detected".format(lbl, gene))
+						remove.append(lbl)
 
 			retain = np.sort(np.setdiff1d(np.arange(n_labels), remove))
 			temp: List[int] = []

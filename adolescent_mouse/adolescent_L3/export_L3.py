@@ -21,7 +21,7 @@ class ExportL3(luigi.Task):
 	def requires(self) -> List[luigi.Task]:
 		return [
 			am.AggregateL3(target=self.target),
-			am.ClusterL3(target=self.target)
+			am.FilterL3(target=self.target)
 		]
 
 	def output(self) -> luigi.Target:
