@@ -39,7 +39,7 @@ class PoolL4(luigi.Task):
 		]
 		classes = ["Oligos", "Astrocytes", "Ependymal", "Vascular", "Immune", "PeripheralGlia"]
 		for target in targets:
-			yield am.ClusterL3(target=target)
+			yield am.FilterL3(target=target)
 		for cl in classes:
 			yield am.FilterL2(major_class=cl, tissue="All")
 
