@@ -76,7 +76,7 @@ class FilterL3(luigi.Task):
 			for lbl in range(n_labels):
 				# Clusters with markers of other major class
 				n_cells_in_cluster = (ds.Clusters == lbl).sum()
-				for gene in nix_genes[self.target]:
+				for gene in nix_genes["L3_" + self.target]:
 					if gene not in ds.Gene:
 						logging.warn("Couldn't use '" + gene + "' to nix clusters")
 					gix = np.where(ds.Gene == gene)[0][0]
