@@ -12,7 +12,7 @@ import scipy.stats
 import adolescent_mouse as am
 
 
-class PoolL4(luigi.Task):
+class PoolL5(luigi.Task):
 	"""
 	Level 4 pooling of the adolescent dataset
 	"""
@@ -35,16 +35,19 @@ class PoolL4(luigi.Task):
 			"DiMesencephalon_Excitatory",
 			"Brain_Granule",
 			"Brain_CholinergicMonoaminergic",
-			"Striatum_MSN"
+			"Striatum_MSN",
+			"Vascular_All",
+			"Oligos_All",
+			"Astrocytes_All",
+			"Ependymal_All",
+			"Immune_All",
+			"PeripheralGlia_All"
 		]
-		classes = ["Oligos", "Astrocytes", "Ependymal", "Vascular", "Immune", "PeripheralGlia"]
 		for target in targets:
-			yield am.FilterL3(target=target)
-		for cl in classes:
-			yield am.FilterL2(major_class=cl, tissue="All")
+			yield am.CurateL4(target=target)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(am.paths().build, "L4_All.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L5_All.loom"))
 		
 	def run(self) -> None:
 		logging = cg.logging(self)

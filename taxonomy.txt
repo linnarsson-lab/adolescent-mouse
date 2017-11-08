@@ -1,0 +1,81 @@
+Neuroectoderm
+	Neurons
+		Neural tube-derived
+			Neuroblasts
+				Rostral migratory stream neuroblasts
+				Dentate granule neuroblasts
+				Cerebellar granule neuroblasts
+			Olfactory neurons
+			Corticostriatal projecting neurons
+				Cortex projecting
+				Hippocampus projecting
+				Striatum projecting
+			Corticostriatal interneurons
+				Cortex/hippocampus inhibitory
+				Striatum inhibitory
+			Diencephalon
+				Diencephalon excitatory (thalamus)
+				Diencephalon inhibitory (hypothalamus)
+			Midbrain
+				Midbrain excitatory
+				Midbrain inhibitory
+			Cerebellum
+			Hindbrain
+				Hindbrain excitatory
+				hindbrain inhibitory
+			Spinal cord
+				Spinal cord excitatory
+				Spinal cord inhibitory
+			Noncanonical neurotransmitter
+				Cholinergic/monoaminergic
+					Cholinergic
+					Serotonergic
+					Dopaminergic
+					Noradrenergic
+					Adrenergic
+				Hypothalamus peptidergic
+		Neural crest-derived
+			Sensory neurons
+			Sympathetic neurons
+			Enteric neurons
+	Macroglia
+		Neural tube-derived
+			Radial glia-like
+				Dentate gyrus radial glia-like
+				Bergmann glia
+			Oligodendrocytes
+				OPCs, COPs, NFOLs, etc.
+				Spinal cord MOLs
+			Astrocytes
+				Olfactory (velate?) astrocytes
+				Forebrain astrocytes
+				Non-forebrain astrocytes
+				Cerebellum velate astrocytes
+			Ependymal cells
+				Cerebral ependymal cells
+				Spinal cord ependymal cells (?)
+				Subcommissural organ ependymal cells (hypendymal?)
+			Choroid epithelial cells
+		Neural crest-derived
+?			Olfactory ensheathing cells
+			Enteric glia
+			Satellite cells
+			Schwann cells
+Mesoderm
+	Vascular
+		Endothelial cells
+		Pericytes
+		VLMCs (perivascular fibroblasts ?)
+		Vascular smooth muscle cells
+	Immune
+		Microglia
+		Perivascular macrophages
+
+Unclassified tissues
+	Retina
+	Inner ear
+	Olfactory epithelium
+	Vomeronasal organ
+	Parasympathetic neurons
+	Pineal gland
+

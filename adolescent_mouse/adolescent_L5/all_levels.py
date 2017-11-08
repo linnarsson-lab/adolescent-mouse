@@ -9,9 +9,9 @@ import luigi
 import adolescent_mouse as am
 
 
-class Level1234(luigi.WrapperTask):
+class AllLevels(luigi.WrapperTask):
 	"""
-	Luigi Task to run all Level 1-4 analyses
+	Luigi Task to run all analyses
 	"""
 
 	def requires(self) -> Iterator[luigi.Task]:
@@ -42,8 +42,10 @@ class Level1234(luigi.WrapperTask):
 
 		for cls in classes:
 			yield am.ExportL2(tissue="All", major_class=cls)
+			yield am.ExportL4(target=cls + "_All")
 
 		for target in targets:
 			yield am.ExportL3(target=target)
+			yield am.ExportL4(target=target)
 
-		yield am.ExportL4()
+		yield am.ExportL5()

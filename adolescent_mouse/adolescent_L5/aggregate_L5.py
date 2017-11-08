@@ -1,6 +1,7 @@
 from typing import *
 import os
 import csv
+import logging
 import pickle
 import loompy
 import numpy as np
@@ -12,19 +13,18 @@ import scipy.cluster.hierarchy as hc
 import adolescent_mouse as am
 
 
-class AggregateL4(luigi.Task):
+class AggregateL5(luigi.Task):
 	"""
 	Aggregate all clusters in a new Loom file
 	"""
-	target = luigi.Parameter()  # e.g. Forebrain_Excitatory
 	n_markers = luigi.IntParameter(default=10)
 	n_auto_genes = luigi.IntParameter(default=6)
 
 	def requires(self) -> List[luigi.Task]:
-		return am.CurateL4(target=self.target)
+		return am.PoolL5()
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(am.paths().build, "L4_" + self.target + ".agg.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, "L5_All.agg.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -33,8 +33,6 @@ class AggregateL4(luigi.Task):
 			ds = loompy.connect(self.input().fn)
 			cg.Aggregator(self.n_markers).aggregate(ds, out_file)
 			dsagg = loompy.connect(out_file)
-			for ix, score in enumerate(dsagg.col_attrs["ClusterScore"]):
-				logging.info(f"Cluster {ix} score {score:.1f}")
 
 			logging.info("Computing auto-annotation")
 			aa = cg.AutoAnnotator(root=am.paths().autoannotation)
