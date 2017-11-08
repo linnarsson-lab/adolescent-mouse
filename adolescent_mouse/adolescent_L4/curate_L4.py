@@ -54,7 +54,7 @@ class CurateL4(luigi.Task):
 			logging.info("Curating clusters in " + self.target)
 			ds = loompy.connect(self.input().fn)
 			n_labels = len(set(ds.Clusters))
-			curated = np.loadtxt(os.path.join(am.paths().build, "curated", self.target + ".curated.txt"), skiprows=1, usecols=(2))
+			curated = np.loadtxt(os.path.join(am.paths().build, "curated", self.target + ".curated.txt"), skiprows=1, usecols=(2,))
 
 			# Renumber the clusters
 			d = dict(zip(np.arange(n_labels), curated.astype('int')))
