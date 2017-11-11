@@ -80,5 +80,5 @@ class PoolL5(luigi.Task):
 				ds.close()
 			dsout.set_attr("Clusters", np.array(cluster_ids), axis=1)
 			dsout.set_attr("OriginalClusters", np.array(original_ids), axis=1)
-			dsout.set_attr("MajorTarget", np.array(samples_per_cell), axis=1)
+			dsout.set_attr("Bucket", np.array(samples_per_cell), axis=1)
 			dsout.close()

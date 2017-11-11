@@ -31,7 +31,20 @@ class AggregateL5(luigi.Task):
 		with self.output().temporary_path() as out_file:
 			logging.info("Aggregating loom file")
 			ds = loompy.connect(self.input().fn)
-			cg.Aggregator(self.n_markers).aggregate(ds, out_file)
+			spec = {
+				"Age": "tally",
+				"Clusters": "first",
+				"Class": "mode",
+				"_Total": "mean",
+				"Sex": "tally",
+				"Tissue": "tally",
+				"SampleID": "tally",
+				"TissuePool": "first",
+				"Outliers": "mean",
+				"Bucket": "mode",
+				"OriginalClusters": "first"
+			}
+			cg.Aggregator(self.n_markers).aggregate(ds, out_file, agg_spec=spec)
 			dsagg = loompy.connect(out_file)
 
 			logging.info("Computing auto-annotation")
