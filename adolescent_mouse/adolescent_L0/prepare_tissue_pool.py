@@ -43,14 +43,14 @@ class PrepareTissuePool(luigi.Task):
 				# Connect and perform file-specific cell validation
 				ds = loompy.connect(sample)
 
-				if metadata is not None:
-					sample_name = os.path.basename(sample)[:-5]
-					logging.info("Inserting metadata for " + sample_name)
-					row = (metadata[:, 0] == sample_name)
-					if row.shape[0] > 0:
-						vals = temp.values[row][0]
-						for ix in range(vals.shape[0]):
-							ds.set_attr(meta_attrs[ix], np.array([vals[ix]] * ds.shape[1]).astype("str"), axis=1)
+				# if metadata is not None:
+				# 	sample_name = os.path.basename(sample)[:-5]
+				# 	logging.info("Inserting metadata for " + sample_name)
+				# 	row = (metadata[:, 0] == sample_name)
+				# 	if row.shape[0] > 0:
+				# 		vals = temp.values[row][0]
+				# 		for ix in range(vals.shape[0]):
+				# 			ds.set_attr(meta_attrs[ix], np.array([vals[ix]] * ds.shape[1]).astype("str"), axis=1)
 
 				logging.info("Marking invalid cells")
 				(mols, genes) = ds.map([np.sum, np.count_nonzero], axis=1)
