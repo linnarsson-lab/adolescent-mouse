@@ -19,7 +19,7 @@ params = {  # eps_pct and min_pts
 	"L3_Olfactory_Inhibitory": [75, 10],
 	"L3_Enteric_Neurons": [60, 10],
 	"L3_Sensory_Neurons": [60, 10],
-	"L3_Sympathetic_Neurons": [60, 10],	
+	"L3_Sympathetic_Neurons": [60, 10],
 	"L3_Hypothalamus_Peptidergic": [60, 10],
 	"L3_Hindbrain_Inhibitory": [60, 10],
 	"L3_Hindbrain_Excitatory": [60, 10],

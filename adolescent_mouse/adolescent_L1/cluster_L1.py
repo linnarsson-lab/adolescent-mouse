@@ -59,8 +59,7 @@ class ClusterL1(luigi.Task):
 								dsout.set_layer(layername, layervalues, dtype=layervalues.dtype)
 						dsout = loompy.connect(out_file)
 					else:
-						loompy.create(out_file, vals, row_attrs=ds.row_attrs, col_attrs=ca)
-						dsout = loompy.connect(out_file)
+						dsout = loompy.create(out_file, vals, row_attrs=ds.row_attrs, col_attrs=ca)
 				else:
 					dsout.add_columns(vals, ca)
 			# dsout.close() causes an exception; disabling gc fixes it. See https://github.com/h5py/h5py/issues/888
