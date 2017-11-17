@@ -32,15 +32,15 @@ class FilterL2(luigi.Task):
 		accessions = None  # type: np.ndarray
 		with self.output().temporary_path() as out_file:
 			ds = loompy.connect(self.input().fn)
-			if not len(set(ds.Clusters)) == ds.Clusters.max() + 1:
+			if not len(set(ds.ca.Clusters)) == ds.ca.Clusters.max() + 1:
 				raise ValueError("There are holes in the cluster ID sequence!")
-			labels = ds.Clusters
+			labels = ds.ca.Clusters
 			n_labels = len(set(labels))
 			remove = []
 
 			# Remove outliers
 			if (ds.Outliers == 1).sum() > 0:
-				remove.append(ds.Clusters[ds.Outliers == 1][0])
+				remove.append(ds.ca.Clusters[ds.Outliers == 1][0])
 				logging.info("Removing outliers")
 
 			# Remove clusters that lack enriched genes
@@ -72,15 +72,15 @@ class FilterL2(luigi.Task):
 			}
 			for lbl in range(n_labels):
 				# Clusters with markers of other major class
-				n_cells_in_cluster = (ds.Clusters == lbl).sum()
+				n_cells_in_cluster = (ds.ca.Clusters == lbl).sum()
 				for cls in nix_genes.keys():
 					if cls == self.major_class:
 						continue
 					for gene in nix_genes[cls]:
-						if gene not in ds.Gene:
+						if gene not in ds.ra.Gene:
 							logging.warn("Couldn't use '" + gene + "' to nix clusters")
-						gix = np.where(ds.Gene == gene)[0][0]
-						if np.count_nonzero(ds[gix, :][ds.Clusters == lbl]) > 0.5 * n_cells_in_cluster:
+						gix = np.where(ds.ra.Gene == gene)[0][0]
+						if np.count_nonzero(ds[gix, :][ds.ca.Clusters == lbl]) > 0.5 * n_cells_in_cluster:
 							# But let it slide if this marker is abundant in the whole tissue
 							if np.count_nonzero(ds[gix, :]) < 0.25 * ds.shape[1]:
 								logging.info("Nixing cluster {} because {} was detected".format(lbl, gene))
@@ -89,12 +89,12 @@ class FilterL2(luigi.Task):
 			retain = np.sort(np.setdiff1d(np.arange(n_labels), remove))
 			temp: List[int] = []
 			for i in retain:
-				temp += list(np.where(ds.Clusters == i)[0])
+				temp += list(np.where(ds.ca.Clusters == i)[0])
 			cells = np.sort(np.array(temp))
 
 			# Renumber the clusters
 			d = dict(zip(retain, np.arange(len(set(retain)) + 1)))
-			new_clusters = np.array([d[x] if x in d else -1 for x in ds.Clusters])
+			new_clusters = np.array([d[x] if x in d else -1 for x in ds.ca.Clusters])
 			logging.info(f"Keeping {cells.shape[0]} of {ds.shape[1]} cells")
 			for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
 				ca = {k: v[selection] for k, v in ds.col_attrs.items()}

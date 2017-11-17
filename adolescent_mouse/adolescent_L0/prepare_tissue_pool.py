@@ -39,7 +39,7 @@ class PrepareTissuePool(luigi.Task):
 			attrs = {"title": self.tissue}
 			valid_cells = []
 			sample_files = [s.fn for s in self.input()]
-			for sample in sample_files:
+			for sample in sorted(sample_files):
 				# Connect and perform file-specific cell validation
 				ds = loompy.connect(sample)
 
@@ -59,9 +59,9 @@ class PrepareTissuePool(luigi.Task):
 				ds.set_attr("_NGenes", genes, axis=1)
 				
 				logging.info("Computing mito/ribo ratio for " + sample)
-				mito = np.where(npstr.startswith(ds.row_attrs["Gene"], "mt-"))[0]
-				ribo = np.where(npstr.startswith(ds.row_attrs["Gene"], "Rpl"))[0]
-				ribo = np.union1d(ribo, np.where(npstr.startswith(ds.row_attrs["Gene"], "Rps"))[0])
+				mito = np.where(npstr.startswith(ds.ra.Gene, "mt-"))[0]
+				ribo = np.where(npstr.startswith(ds.ra.Gene, "Rpl"))[0]
+				ribo = np.union1d(ribo, np.where(npstr.startswith(ds.ra.Gene, "Rps"))[0])
 				if len(ribo) > 0 and len(mito) > 0:
 					mitox = ds[mito, :]
 					ribox = ds[ribo, :]
@@ -99,6 +99,7 @@ class PrepareTissuePool(luigi.Task):
 				logging.info("Classifying cells by major class")
 				with open(classifier_path, "rb") as f:
 					clf = pickle.load(f)  # type: cg.Classifier
+				np.random.seed(13)
 				(classes, probs, class_labels) = clf.predict(ds, probability=True)
 
 				mapping = {

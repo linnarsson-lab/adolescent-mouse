@@ -31,9 +31,9 @@ class FilterL3(luigi.Task):
 		accessions = None  # type: np.ndarray
 		with self.output().temporary_path() as out_file:
 			ds = loompy.connect(self.input().fn)
-			if not len(set(ds.Clusters)) == ds.Clusters.max() + 1:
+			if not len(set(ds.ca.Clusters)) == ds.ca.Clusters.max() + 1:
 				raise ValueError("There are holes in the cluster ID sequence!")
-			labels = ds.Clusters
+			labels = ds.ca.Clusters
 			n_labels = len(set(labels))
 			remove = []
 
@@ -75,11 +75,11 @@ class FilterL3(luigi.Task):
 			}
 			for lbl in range(n_labels):
 				# Clusters with markers of other major class
-				n_cells_in_cluster = (ds.Clusters == lbl).sum()
+				n_cells_in_cluster = (ds.ca.Clusters == lbl).sum()
 				for gene in nix_genes["L3_" + self.target]:
-					if gene not in ds.Gene:
+					if gene not in ds.ra.Gene:
 						logging.warn("Couldn't use '" + gene + "' to nix clusters")
-					gix = np.where(ds.Gene == gene)[0][0]
+					gix = np.where(ds.ra.Gene == gene)[0][0]
 					if trinaries[gix, lbl] > 0.95:
 						logging.info("Nixing cluster {} because {} was detected".format(lbl, gene))
 						remove.append(lbl)
@@ -87,12 +87,12 @@ class FilterL3(luigi.Task):
 			retain = np.sort(np.setdiff1d(np.arange(n_labels), remove))
 			temp: List[int] = []
 			for i in retain:
-				temp += list(np.where(ds.Clusters == i)[0])
+				temp += list(np.where(ds.ca.Clusters == i)[0])
 			cells = np.sort(np.array(temp))
 
 			# Renumber the clusters
 			d = dict(zip(retain, np.arange(len(set(retain)) + 1)))
-			new_clusters = np.array([d[x] if x in d else -1 for x in ds.Clusters])
+			new_clusters = np.array([d[x] if x in d else -1 for x in ds.ca.Clusters])
 			logging.info(f"Keeping {cells.shape[0]} of {ds.shape[1]} cells")
 			for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
 				ca = {k: v[selection] for k, v in ds.col_attrs.items()}

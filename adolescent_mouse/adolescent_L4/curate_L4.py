@@ -53,12 +53,12 @@ class CurateL4(luigi.Task):
 		with self.output().temporary_path() as out_file:
 			logging.info("Curating clusters in " + self.target)
 			ds = loompy.connect(self.input().fn)
-			n_labels = len(set(ds.Clusters))
+			n_labels = len(set(ds.ca.Clusters))
 			curated = np.loadtxt(os.path.join(am.paths().build, "curated", self.target + ".curated.txt"), skiprows=1, usecols=(2,))
 
 			# Renumber the clusters
 			d = dict(zip(np.arange(n_labels), curated.astype('int')))
-			new_clusters = np.array([d[x] if x in d else -1 for x in ds.Clusters])
+			new_clusters = np.array([d[x] if x in d else -1 for x in ds.ca.Clusters])
 			cells = np.where(new_clusters >= 0)[0]
 			logging.info(f"Keeping {cells.shape[0]} of {ds.shape[1]} cells")
 			for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
