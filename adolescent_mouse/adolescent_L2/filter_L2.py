@@ -39,8 +39,8 @@ class FilterL2(luigi.Task):
 			remove = []
 
 			# Remove outliers
-			if (ds.Outliers == 1).sum() > 0:
-				remove.append(ds.ca.Clusters[ds.Outliers == 1][0])
+			if (ds.ca.Outliers == 1).sum() > 0:
+				remove.append(ds.ca.Clusters[ds.ca.Outliers == 1][0])
 				logging.info("Removing outliers")
 
 			# Remove clusters that lack enriched genes

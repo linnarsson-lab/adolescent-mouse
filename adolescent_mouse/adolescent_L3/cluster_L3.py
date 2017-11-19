@@ -148,34 +148,32 @@ class ClusterL3(luigi.Task):
 			genes = np.sort(np.array(temp))
 
 			logging.info("Learning the manifold")
-			ds = loompy.connect(out_file)
-			ml = cg.ManifoldLearning2(gtsne=True, alpha=1, genes=genes)
-			(knn, mknn, tsne) = ml.fit(ds)
-			ds.set_edges("KNN", knn.row, knn.col, knn.data, axis=1)
-			ds.set_edges("MKNN", mknn.row, mknn.col, mknn.data, axis=1)
-			ds.set_attr("_X", tsne[:, 0], axis=1)
-			ds.set_attr("_Y", tsne[:, 1], axis=1)
+			with loompy.connect(out_file) as ds:
+				ml = cg.ManifoldLearning2(gtsne=True, alpha=1, genes=genes)
+				(knn, mknn, tsne) = ml.fit(ds)
+				ds.set_edges("KNN", knn.row, knn.col, knn.data, axis=1)
+				ds.set_edges("MKNN", mknn.row, mknn.col, mknn.data, axis=1)
+				ds.set_attr("_X", tsne[:, 0], axis=1)
+				ds.set_attr("_Y", tsne[:, 1], axis=1)
 
-			logging.info("Clustering on the manifold")
-			(eps_pct, min_pts) = (65, 20)
-			if "L3_" + self.target in params:
-				(eps_pct, min_pts) = params["L3_" + self.target]
-			logging.info(f"MKNN-Louvain with min_pts {min_pts}")
-			cls = cg.Clustering(method="mknn_louvain", eps_pct=eps_pct, min_pts=min_pts)
-			labels = cls.fit_predict(ds)
-			n_labels = len(set(labels))
-			ds.set_attr("Clusters", labels, axis=1)
-			logging.info(f"Found {labels.max() + 1} clusters")
-			distance = 0.2
-			if self.target == "Striatum_MSN":
-				distance = 0.4
-			cg.Merger(min_distance=distance).merge(ds)
-			# Merge twice to deal with super-similar clusters like granule cells
-			cg.Merger(min_distance=distance).merge(ds)
-			n_labels = ds.col_attrs['Clusters'].max() + 1
-			logging.info(f"Merged to {n_labels} clusters")
-
-			ds.close()
+				logging.info("Clustering on the manifold")
+				(eps_pct, min_pts) = (65, 20)
+				if "L3_" + self.target in params:
+					(eps_pct, min_pts) = params["L3_" + self.target]
+				logging.info(f"MKNN-Louvain with min_pts {min_pts}")
+				cls = cg.Clustering(method="mknn_louvain", eps_pct=eps_pct, min_pts=min_pts)
+				labels = cls.fit_predict(ds)
+				n_labels = len(set(labels))
+				ds.set_attr("Clusters", labels, axis=1)
+				logging.info(f"Found {labels.max() + 1} clusters")
+				# distance = 0.2
+				# if self.target == "Striatum_MSN":
+				# 	distance = 0.4
+				# cg.Merger(min_distance=distance).merge(ds)
+				# # Merge twice to deal with super-similar clusters like granule cells
+				# cg.Merger(min_distance=distance).merge(ds)
+				# n_labels = ds.col_attrs['Clusters'].max() + 1
+				# logging.info(f"Merged to {n_labels} clusters")
 
 
 pooling_schedule_L3 = {
