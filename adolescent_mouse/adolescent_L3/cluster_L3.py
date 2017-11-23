@@ -161,7 +161,7 @@ class ClusterL3(luigi.Task):
 				if "L3_" + self.target in params:
 					(eps_pct, min_pts) = params["L3_" + self.target]
 				logging.info(f"MKNN-Louvain with min_pts {min_pts}")
-				cls = cg.Clustering(method="mknn_louvain", eps_pct=eps_pct, min_pts=min_pts)
+				cls = cg.Clustering(method="mknn_louvain", eps_pct=eps_pct, min_pts=min_pts, outliers=False)
 				labels = cls.fit_predict(ds)
 				n_labels = len(set(labels))
 				ds.set_attr("Clusters", labels, axis=1)

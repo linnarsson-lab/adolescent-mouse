@@ -77,7 +77,7 @@ class ClusterL1(luigi.Task):
 			ds.set_attr("_Y", tsne[:, 1], axis=1)
 
 			logging.info("Clustering on the manifold")
-			cls = cg.Clustering(method="mknn_louvain", min_pts=10)
+			cls = cg.Clustering(method="mknn_louvain", min_pts=10, outliers=False)
 			labels = cls.fit_predict(ds)
 			ds.set_attr("Clusters", labels, axis=1)
 			logging.info(f"Found {labels.max() + 1} clusters")

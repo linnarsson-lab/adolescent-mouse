@@ -140,11 +140,11 @@ class ClusterL2(luigi.Task):
 			logging.info("Clustering on the manifold")
 			fname = "L2_" + self.major_class + "_" + self.tissue
 			(eps_pct, min_pts) = params[fname]
-			cls = cg.Clustering(method="mknn_louvain", eps_pct=eps_pct, min_pts=min_pts)
+			cls = cg.Clustering(method="mknn_louvain", min_pts=10, outliers=False)
 			labels = cls.fit_predict(ds)
 			ds.set_attr("Clusters", labels, axis=1)
 			logging.info(f"Found {labels.max() + 1} clusters")
-			# cg.Merger(min_distance=0.2).merge(ds)
-			# logging.info(f"Merged to {ds.col_attrs['Clusters'].max() + 1} clusters")
+			cg.Merger(min_distance=0.2).merge(ds)
+			logging.info(f"Merged to {ds.col_attrs['Clusters'].max() + 1} clusters")
 			ds.close()
 		dsout.close()
