@@ -47,9 +47,17 @@ class ExportL2(luigi.Task):
 				dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_trinaries.tab"), layer="trinaries")
 
 				logging.info("Plotting manifold graph with auto-annotation")
-				tags = list(dsagg.col_attrs["AutoAnnotation"][np.argsort(dsagg.col_attrs["Clusters"])])
+				tags = list(dsagg.col_attrs["AutoAnnotation"])
 				with loompy.connect(self.input()[1].fn) as ds:
 					cg.plot_graph(ds, os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_manifold.aa.png"), tags)
+
+					logging.info("Plotting manifold graph with bucket list")
+					tags = list(dsagg.col_attrs["Bucket"])
+					cg.plot_graph(ds, os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_manifold.buckets.png"), tags)
+					n_cells = dsagg.ca.NCells
+					with open(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_buckets.txt"), 'w') as bf:
+						for ix, tag in enumerate(tags):
+							bf.write(f"{ix}\t{n_cells[ix]}\t{tag}\t{tag}\t(comment)\n")
 
 					logging.info("Plotting manifold graph with auto-auto-annotation")
 					tags = list(dsagg.col_attrs["MarkerGenes"][np.argsort(dsagg.col_attrs["Clusters"])])
