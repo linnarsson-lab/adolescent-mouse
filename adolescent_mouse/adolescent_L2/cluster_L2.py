@@ -9,6 +9,8 @@ import cytograph as cg
 import luigi
 import numpy_groupies.aggregate_numpy as npg
 import scipy.stats
+from sklearn.cluster import DBSCAN
+from sklearn.neighbors import BallTree, NearestNeighbors, kneighbors_graph
 import tempfile
 import adolescent_mouse as am
 
@@ -72,79 +74,102 @@ class ClusterL2(luigi.Task):
 		accessions = None  # type: np.ndarray
 		with self.output().temporary_path() as out_file:
 			for clustered in self.input():
-				ds = loompy.connect(clustered.fn)
-				logging.info("Split/pool from " + clustered.fn)
-				labels = ds.col_attrs["Class"]
+				with loompy.connect(clustered.fn, "r") as ds:
+					logging.info("Split/pool from " + clustered.fn)
 
-				# Mask out cells that do not have the majority label of its cluster
-				clusters = ds.col_attrs["Clusters"]
+					logging.info("Masking outliers")
+					min_pts = 10
+					eps_pct = 80
+					tsne_pos = np.vstack((ds.col_attrs["_X"], ds.col_attrs["_Y"])).transpose()
 
-				def mode(x):
-					return scipy.stats.mode(x)[0][0]
+					# DBSCAN to find outliers
+					nn = NearestNeighbors(n_neighbors=min_pts, algorithm="ball_tree", n_jobs=4)
+					nn.fit(tsne_pos)
+					knn = nn.kneighbors_graph(mode='distance')
+					k_radius = knn.max(axis=1).toarray()
+					epsilon = np.percentile(k_radius, eps_pct)
 
-				majority_labels = npg.aggregate(clusters, labels, func=mode).astype('str')
+					clusterer = DBSCAN(eps=epsilon, min_samples=min_pts)
+					labels = clusterer.fit_predict(tsne_pos)
 
-				temp = []
-				for ix in range(ds.shape[1]):
-					if labels[ix] == self.major_class and labels[ix] == majority_labels[clusters[ix]]:
-						temp.append(ix)
-				logging.info("Keeping " + str(len(temp)) + " cells with majority labels")
-				if len(temp) == 0:
-					continue
+					# Mask out cells that don't match the class of their local neighbors
+					logging.info("Masking cells in bad neighborhoods")
+					temp = []
+					for ix in range(ds.shape[1]):
+						if labels[ix] == -1:
+							continue
+						if ds.ca.Class[ix] == self.major_class:
+							neighbors = ds.col_graphs.KNN.col[np.where(ds.col_graphs.KNN.row == ix)[0]]
+							neighborhood = ds.ca.Class[neighbors] == self.major_class
+							if neighborhood.sum() / neighborhood.shape[0] > 0.2:
+								temp.append(ix)
+					
+					# Mask out cells that do not have the majority label of its cluster
+					# clusters = ds.col_attrs["Clusters"]
 
-				cells = np.array(temp)
-				if self.major_class == "Oligos":
-					# Special selection of cells for the oligo class, to balance between tissues
-					enough_genes = ds.map((np.count_nonzero,), axis=1)[0] > 1000
-					has_pdgfra = ds[ds.ra.Gene == "Pdgfra", :][0] > 0
-					has_meg3 = ds[ds.ra.Gene == "Meg3", :][0] > 0
-					is_doublet = np.zeros(ds.shape[1], dtype='bool')
-					for g in ['Stmn2', 'Aqp4', 'Gja1', 'C1qc', 'Aif1', 'Cldn5', 'Fn1', 'Hbb-bt', 'Hbb-bh1', 'Hbb-bh2', 'Hbb-y', 'Hbb-bs', 'Hba-a1', 'Hba-a2', 'Hba-x']:
-						is_doublet = np.logical_or(is_doublet, ds[ds.ra.Gene == g, :][0] > 0)
-					ok_cells = enough_genes & (~is_doublet) & (has_pdgfra | ~has_meg3)
-					cells = np.intersect1d(cells, np.where(ok_cells)[0])
-					if cells.shape[0] > 5000:
-						cells = np.random.choice(cells, 5000, False)
+					# def mode(x):
+					# 	return scipy.stats.mode(x)[0][0]
 
-				# Keep track of the gene order in the first file
-				if accessions is None:
-					accessions = ds.row_attrs["Accession"]
-				
-				ordering = np.where(ds.row_attrs["Accession"][None, :] == accessions[:, None])[1]
-				for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
-					ca = {}
-					for key in ds.col_attrs:
-						ca[key] = ds.col_attrs[key][selection]
-					if dsout is None:
-						dsout = loompy.create(out_file, vals[ordering, :], ds.row_attrs, ca)
-					else:
-						dsout.add_columns(vals[ordering, :], ca)
+					# majority_labels = npg.aggregate(clusters, labels, func=mode).astype('str')
 
-			#
-			# logging.info("Poisson imputation")
-			# pi = cg.PoissonImputation(k=self.k, N=self.N, n_genes=self.n_genes, n_components=self.n_components)
-			# pi.impute_inplace(dsout)
+					# temp = []
+					# for ix in range(ds.shape[1]):
+					# 	if labels[ix] == self.major_class and labels[ix] == majority_labels[clusters[ix]]:
+					# 		temp.append(ix)
+					# logging.info("Keeping " + str(len(temp)) + " cells with majority labels")
+					# if len(temp) == 0:
+					# 	continue
+
+					cells = np.array(temp)
+					if self.major_class == "Oligos":
+						# Special selection of cells for the oligo class, to balance between tissues
+						enough_genes = ds.map((np.count_nonzero,), axis=1)[0] > 1000
+						has_pdgfra = ds[ds.ra.Gene == "Pdgfra", :][0] > 0
+						has_meg3 = ds[ds.ra.Gene == "Meg3", :][0] > 0
+						is_doublet = np.zeros(ds.shape[1], dtype='bool')
+						for g in ['Stmn2', 'Aqp4', 'Gja1', 'C1qc', 'Aif1', 'Cldn5', 'Fn1', 'Hbb-bt', 'Hbb-bh1', 'Hbb-bh2', 'Hbb-y', 'Hbb-bs', 'Hba-a1', 'Hba-a2', 'Hba-x']:
+							is_doublet = np.logical_or(is_doublet, ds[ds.ra.Gene == g, :][0] > 0)
+						ok_cells = enough_genes & (~is_doublet) & (has_pdgfra | ~has_meg3)
+						cells = np.intersect1d(cells, np.where(ok_cells)[0])
+						if cells.shape[0] > 5000:
+							cells = np.random.choice(cells, 5000, False)
+
+					# Keep track of the gene order in the first file
+					if accessions is None:
+						accessions = ds.row_attrs["Accession"]
+					
+					ordering = np.where(ds.row_attrs["Accession"][None, :] == accessions[:, None])[1]
+					for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
+						ca = {}
+						for key in ds.col_attrs:
+							ca[key] = ds.col_attrs[key][selection]
+						if dsout is None:
+							dsout = loompy.create(out_file, vals[ordering, :], ds.row_attrs, ca)
+						else:
+							dsout.add_columns(vals[ordering, :], ca)
 
 			logging.info("Learning the manifold")
-			ds = loompy.connect(out_file)
 			if self.major_class == "Oligos":
 				ml = cg.ManifoldLearning2(n_genes=self.n_genes, alpha=self.alpha)
 			else:
 				ml = cg.ManifoldLearning2(n_genes=self.n_genes, gtsne=self.gtsne, alpha=self.alpha)
-			(knn, mknn, tsne) = ml.fit(ds)
-			ds.set_edges("KNN", knn.row, knn.col, knn.data, axis=1)
-			ds.set_edges("MKNN", mknn.row, mknn.col, mknn.data, axis=1)
-			ds.set_attr("_X", tsne[:, 0], axis=1)
-			ds.set_attr("_Y", tsne[:, 1], axis=1)
+			(knn, mknn, tsne) = ml.fit(dsout)
+			dsout.col_graphs.KNN = knn
+			dsout.col_graphs.MKNN = mknn
+			dsout.ca._X = tsne[:, 0]
+			dsout.ca._Y = tsne[:, 1]
 
 			logging.info("Clustering on the manifold")
 			fname = "L2_" + self.major_class + "_" + self.tissue
-			(eps_pct, min_pts) = params[fname]
-			cls = cg.Clustering(method="mknn_louvain", min_pts=10, outliers=False)
-			labels = cls.fit_predict(ds)
-			ds.set_attr("Clusters", labels, axis=1)
+			# (eps_pct, min_pts) = params[fname]
+			# cls = cg.Clustering(method="mknn_louvain", min_pts=10, outliers=True)
+			# labels = cls.fit_predict(dsout)
+			pl = cg.PolishedLouvain()
+			labels = pl.fit_predict(dsout.col_graphs.MKNN, tsne)
+			dsout.ca.Clusters = labels + 1
+			dsout.ca.Outliers = (labels == -1).astype('int')
 			logging.info(f"Found {labels.max() + 1} clusters")
-			cg.Merger(min_distance=0.2).merge(ds)
-			logging.info(f"Merged to {ds.col_attrs['Clusters'].max() + 1} clusters")
-			ds.close()
-		dsout.close()
+			# cg.Merger(min_distance=0.1).merge(dsout)
+			# logging.info(f"Merged to {dsout.ca.Clusters.max() + 1} clusters")
+			dsout.close()
+

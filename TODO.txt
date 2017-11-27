@@ -42,3 +42,92 @@ Calculate correlation between each cell type expression (log2+1) and voxel profi
 
 
 
+few problems suggestion:
+
+1. remove outliers based on dbscan like i said before.
+
+2. remove cells that are misplaced, if a cell KNN are not from the same class exclude it. there are many examples of cells scattering around, they are most likely doublets or misplaced.
+
+3. might be necessary to remove whole clusters of the majority are from exclude class. many times these clusters have some of the cells assign to other class which is probably not correct (see for example cortex2 clusters 4,9,33)
+
+4. mainly in the periphery classifier dont work good. ENS cluster 19, sympathetic 2,3,4,6, DRG 2,19,22. (maybe we can live with it and exclude later)
+
+5. remove clusters enrich with Hba genes. i think you had something like that.
+
+
+
+
+here is my suggestion for polishing the Louvain clustering:
+
+remove cells:
+
+1. identify as outliers by DBSCAN with MinPts=10, eps_prc=80.
+
+2. have less than 20% of closest neighbors in the embedding from their clusters.
+
+
+below is a code for identify problematic clusters and break them. so far it works very nice.
+
+lines with % are comments
+
+% c_id - cluster id per cell
+% mapped_xy is the embedding
+c_id_uni = unique(c_id);
+all_ol = false(length(c_id),1); % initiate outliers
+c_id_new = double(c_id); % this will be the new vector of cluster id
+for ii=1:length(c_id_uni)
+   in = c_id==c_id_uni(ii);
+   prj = pca_wis(mapped_xy(in,:));%use the PCA to rotate the cluster to the principle axes
+   x = prj(:,1); y = prj(:,2);
+   x = (x-mean(x))/std(x); % standardize the x and y
+   y = (y-mean(y))/std(y);
+   ol = false(size(x));
+   for jj=1:5 % do it 5 times (arbitrary)
+       oltmp = isoutlier(x(~ol)) | isoutlier(y(~ol),'grubbs'); % isoutlier is a matlab function for 1D data, so check both x and y
+       tmp = find(~ol);
+       ol(tmp(oltmp)) = true;
+   end
+   in = find(in);
+   all_ol(in(ol)) = true; % store the outliers list
+
+%     here i do KNN on the specific cluster embedding but it is mostly to
+%     find the epsilon like we do in DBSCAN, (no need for KNN)
+   D = squareform(pdist([x,y]),'tomatrix');
+   [~,XI] = sort(D,'ascend');
+   MinPts = max([5,round(0.1*length(x))]);
+   epsilon_prc = [70];
+   knn_rad = zeros(length(D),1);
+   knnmat = zeros(size(D));
+   for i=1:length(knn_rad)
+       knn_rad(i) = D(i,XI(MinPts,i));
+       knnmat(i,XI(1:MinPts,i)) = 1;
+       knnmat(XI(1:MinPts,i),i) = 1;
+   end
+   epsilon = prctile(knn_rad,epsilon_prc);
+%   the criteria for broken cluster is: (1) more than 3 outliers OR (2)
+%   there is less than half MinPts in a radius around the center of the
+%   cluster (center is in (0,0) since we standardize x,y)
+   if sum(sqrt(x.^2+y.^2)<epsilon)<MinPts*0.5 | sum(ol)>3
+       [idx, isnoise] = DBSCAN([x,y],epsilon,MinPts); % if cluster is broken apply DBSCAN and update the cluster id list
+       c_id_new(in) = 100*(c_id_new(in)+1) + idx;%max(c_id_new) + idx;
+   end
+end
+
+% % % % % % % % % % % % % % % % % % %
+% after this do majority for cluster id according to KNN on the embedding.
+% i used 50 but i can be adapted to the size of the problem.
+D = squareform(pdist(mapped_xy),'tomatrix');
+[~,XI] = sort(D,'ascend');
+rmv = false(length(D),1);
+tmp = zeros(size(c_id_new));
+for i=1:length(D)
+   tmp(i) = mode(c_id_new(XI(1:50,i)));
+end
+c_id_new = tmp;
+
+
+
+1. PCA for polished Louvain
+2. Apply bucket rules to level 2, write to loom
+3. Write bucket file (cluster, number of cells, bucket, new bucket, comments)
+4. Plot classes, neurotransmitter L1, L2, L3

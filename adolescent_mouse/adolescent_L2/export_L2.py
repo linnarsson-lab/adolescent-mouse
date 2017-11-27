@@ -22,7 +22,7 @@ class ExportL2(luigi.Task):
 	def requires(self) -> List[luigi.Task]:
 		return [
 			am.AggregateL2(tissue=self.tissue, major_class=self.major_class),
-			am.FilterL2(tissue=self.tissue, major_class=self.major_class)
+			am.ClusterL2(tissue=self.tissue, major_class=self.major_class)
 		]
 
 	def output(self) -> luigi.Target:
@@ -35,40 +35,43 @@ class ExportL2(luigi.Task):
 			if not os.path.exists(out_dir):
 				os.mkdir(out_dir)
 
-			dsagg = loompy.connect(self.input()[0].fn)
-			logging.info("Computing auto-annotation")
-			aa = cg.AutoAnnotator(root=am.paths().autoannotation)
-			aa.annotate_loom(dsagg)
-			aa.save_in_loom(dsagg)
+			with loompy.connect(self.input()[0].fn) as dsagg:
+				logging.info("Computing auto-annotation")
+				aa = cg.AutoAnnotator(root=am.paths().autoannotation)
+				aa.annotate_loom(dsagg)
+				aa.save_in_loom(dsagg)
 
-			dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_expression.tab"))
-			dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_enrichment.tab"), layer="enrichment")
-			dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_enrichment_q.tab"), layer="enrichment_q")
-			dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_trinaries.tab"), layer="trinaries")
+				dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_expression.tab"))
+				dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_enrichment.tab"), layer="enrichment")
+				dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_enrichment_q.tab"), layer="enrichment_q")
+				dsagg.export(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_trinaries.tab"), layer="trinaries")
 
-			logging.info("Plotting manifold graph with auto-annotation")
-			tags = list(dsagg.col_attrs["AutoAnnotation"][np.argsort(dsagg.col_attrs["Clusters"])])
-			ds = loompy.connect(self.input()[1].fn)
-			cg.plot_graph(ds, os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_manifold.aa.png"), tags)
+				logging.info("Plotting manifold graph with auto-annotation")
+				tags = list(dsagg.col_attrs["AutoAnnotation"][np.argsort(dsagg.col_attrs["Clusters"])])
+				with loompy.connect(self.input()[1].fn) as ds:
+					cg.plot_graph(ds, os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_manifold.aa.png"), tags)
 
-			logging.info("Plotting manifold graph with auto-auto-annotation")
-			tags = list(dsagg.col_attrs["MarkerGenes"][np.argsort(dsagg.col_attrs["Clusters"])])
-			cg.plot_graph(ds, os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_manifold.aaa.png"), tags)
+					logging.info("Plotting manifold graph with auto-auto-annotation")
+					tags = list(dsagg.col_attrs["MarkerGenes"][np.argsort(dsagg.col_attrs["Clusters"])])
+					cg.plot_graph(ds, os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_manifold.aaa.png"), tags)
 
-			logging.info("Plotting marker heatmap")
-			cg.plot_markerheatmap(ds, dsagg, n_markers_per_cluster=self.n_markers, out_file=os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_heatmap.pdf"))
+					logging.info("Plotting manifold graph with classes")
+					cg.plot_classes(ds, os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_manifold.classes.png"))
 
-			logging.info("Computing discordance distances")
-			pep = 0.05
-			n_labels = dsagg.shape[1]
+					logging.info("Plotting marker heatmap")
+					cg.plot_markerheatmap(ds, dsagg, n_markers_per_cluster=self.n_markers, out_file=os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_heatmap.pdf"))
 
-			def discordance_distance(a: np.ndarray, b: np.ndarray) -> float:
-				"""
-				Number of genes that are discordant with given PEP, divided by number of clusters
-				"""
-				return np.sum((1 - a) * b + a * (1 - b) > 1 - pep) / n_labels
+					logging.info("Computing discordance distances")
+					pep = 0.05
+					n_labels = dsagg.shape[1]
 
-			data = dsagg.layer["trinaries"][:n_labels * 10, :].T
-			D = squareform(pdist(data, discordance_distance))
-			with open(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_distances.txt"), "w") as f:
-				f.write(str(np.diag(D, k=1)))
+					def discordance_distance(a: np.ndarray, b: np.ndarray) -> float:
+						"""
+						Number of genes that are discordant with given PEP, divided by number of clusters
+						"""
+						return np.sum((1 - a) * b + a * (1 - b) > 1 - pep) / n_labels
+
+					data = dsagg.layer["trinaries"][:n_labels * 10, :].T
+					D = squareform(pdist(data, discordance_distance))
+					with open(os.path.join(out_dir, "L2_" + self.major_class + "_" + self.tissue + "_distances.txt"), "w") as f:
+						f.write(str(np.diag(D, k=1)))
