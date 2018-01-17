@@ -131,3 +131,17 @@ c_id_new = tmp;
 2. Apply bucket rules to level 2, write to loom
 3. Write bucket file (cluster, number of cells, bucket, new bucket, comments)
 4. Plot classes, neurotransmitter L1, L2, L3
+
+
+i was doing something very simple
+
+1. for each cluster for example "gr1" find those genes that have trinarization score >0.9 in all the clusters
+
+indcan1 = find(mean(data_t(:,gr1)>0.9,2)==1); % data_t is genesXclusters
+
+2. then the score is the difference between mean trinarization score within group compare to the rest of the clusters.
+score = mean(data_t(:,gr1)>0.9,2) - mean(data_t(:,~gr1)>0.9,2);
+
+sort the score and plot the top 10 only if they are above 0.9 or 0.8
+
+amit

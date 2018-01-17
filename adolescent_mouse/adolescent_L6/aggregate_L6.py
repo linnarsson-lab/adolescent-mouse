@@ -1,6 +1,7 @@
 from typing import *
 import os
 import csv
+import logging
 import pickle
 import loompy
 import numpy as np
@@ -12,29 +13,55 @@ import scipy.cluster.hierarchy as hc
 import adolescent_mouse as am
 
 
-class AggregateL3(luigi.Task):
+class AggregateL6(luigi.Task):
 	"""
 	Aggregate all clusters in a new Loom file
 	"""
-	target = luigi.Parameter()  # e.g. Forebrain_Excitatory
 	n_markers = luigi.IntParameter(default=10)
 	n_auto_genes = luigi.IntParameter(default=6)
+	rank = luigi.IntParameter()
+	taxon = luigi.Parameter()
 
 	def requires(self) -> List[luigi.Task]:
-		return am.ClusterL3(target=self.target)
+		return am.ExtractL6(rank=self.rank, taxon=self.taxon)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(am.paths().build, "L3_" + self.target + ".agg.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, f"L6_R{self.rank}_({self.taxon}).agg.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
 		with self.output().temporary_path() as out_file:
 			logging.info("Aggregating loom file")
 			ds = loompy.connect(self.input().fn)
-			cg.Aggregator(self.n_markers).aggregate(ds, out_file)
+			spec = {
+				"Age": "tally",
+				"Clusters": "first",
+				"Class": "mode",
+				"_Total": "mean",
+				"Sex": "tally",
+				"Tissue": "tally",
+				"SampleID": "tally",
+				"TissuePool": "first",
+				"Outliers": "mean",
+				"Bucket": "mode",
+				"Region": "first",
+				"OriginalClusters": "first",
+				"Probable_location": "first",
+				"Developmental_compartment": "first",
+				"Description": "first",
+				"Location_based_on": "first",
+				"Neurotransmitter": "first",
+				"ClusterName": "first",
+				"Comment": "first",
+				"ClusterName": "first",
+				"TaxonomyRank1": "first",
+				"TaxonomyRank2": "first",
+				"TaxonomyRank3": "first",
+				"TaxonomyRank4": "first",
+				"TaxonomySymbol": "first"
+			}
+			cg.Aggregator(f=[0.2, 0.05]).aggregate(ds, out_file, agg_spec=spec)
 			dsagg = loompy.connect(out_file)
-			for ix, score in enumerate(dsagg.col_attrs["ClusterScore"]):
-				logging.info(f"Cluster {ix} score {score:.1f}")
 
 			logging.info("Computing auto-annotation")
 			aa = cg.AutoAnnotator(root=am.paths().autoannotation)

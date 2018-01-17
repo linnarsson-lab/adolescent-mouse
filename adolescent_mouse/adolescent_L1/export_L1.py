@@ -51,8 +51,11 @@ class ExportL1(luigi.Task):
 				# logging.info("Plotting Louvain resolution")
 				# cg.plot_louvain(ds, os.path.join(out_dir, "L1_" + self.tissue + "_manifold.louvain.png"))
 
-				logging.info("Plotting manifold graph with classes")
-				cg.plot_classes(ds, os.path.join(out_dir, "L1_" + self.tissue + "_manifold.classes.png"))
+				try:
+					logging.info("Plotting manifold graph with classes")
+					cg.plot_classes(ds, os.path.join(out_dir, "L1_" + self.tissue + "_manifold.classes.png"))
+				except Exception:
+					pass
 
 				logging.info("Plotting manifold graph with auto-annotation")
 				tags = list(dsagg.col_attrs["AutoAnnotation"])

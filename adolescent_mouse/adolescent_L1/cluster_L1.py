@@ -46,36 +46,22 @@ class ClusterL1(luigi.Task):
 		logging = cg.logging(self)
 		with self.output().temporary_path() as out_file:
 			with loompy.connect(self.input().fn) as ds:
-				dsout: loompy.LoomConnection = None
-				logging.info("Removing invalid cells")
-				for (ix, selection, vals) in ds.batch_scan_layers(cells=np.where(ds.col_attrs["_Valid"] == 1)[0], layers=ds.layer.keys(), axis=1):
-					ca = {key: val[selection] for key, val in ds.col_attrs.items()}
-					if dsout is None:
-						# NOTE Loompy Create should support multilayer !!!!
-						if type(vals) is dict:
-							dsout = loompy.create(out_file, matrix=None, row_attrs=ds.row_attrs, col_attrs=ca, layers=vals)
-							dsout = loompy.connect(out_file)
-						else:
-							dsout = loompy.create(out_file, vals, row_attrs=ds.row_attrs, col_attrs=ca)
-					else:
-						dsout.add_columns(vals, ca)
+				for (ix, selection, view) in ds.scan(items=np.where(ds.col_attrs["_Valid"] == 1)[0], axis=1, key="Accession"):
+					loompy.create_append(out_file, view.layers, view.ra, view.ca)
 
+			with loompy.connect(out_file) as ds:
 				logging.info("Learning the manifold")
-				ds = loompy.connect(out_file)
 				ml = cg.ManifoldLearning2(n_genes=self.n_genes, gtsne=self.gtsne, alpha=self.alpha, filter_cellcycle=self.filter_cellcycle, layer=self.layer)
 				(knn, mknn, tsne) = ml.fit(ds)
-				ds.set_edges("KNN", knn.row, knn.col, knn.data, axis=1)
-				ds.set_edges("MKNN", mknn.row, mknn.col, mknn.data, axis=1)
-				ds.set_attr("_X", tsne[:, 0], axis=1)
-				ds.set_attr("_Y", tsne[:, 1], axis=1)
+				ds.col_graphs.KNN = knn
+				ds.col_graphs.MKNN = mknn
+				ds.ca._X = tsne[:, 0]
+				ds.ca._Y = tsne[:, 1]
 
 				logging.info("Clustering on the manifold")
-				# cls = cg.Clustering(method="mknn_louvain", min_pts=10, outliers=True)
-				# labels = cls.fit_predict(ds)
 				pl = cg.PolishedLouvain()
-				labels = pl.fit_predict(ds.col_graphs.MKNN, tsne)
+				labels = pl.fit_predict(ds)
 				ds.ca.Clusters = labels + 1
 				ds.ca.Outliers = (labels == -1).astype('int')
 				logging.info(f"Found {labels.max() + 1} clusters")
-				dsout.close()
 

@@ -103,22 +103,6 @@ class ClusterL2(luigi.Task):
 							neighborhood = ds.ca.Class[neighbors] == self.major_class
 							if neighborhood.sum() / neighborhood.shape[0] > 0.2:
 								temp.append(ix)
-					
-					# Mask out cells that do not have the majority label of its cluster
-					# clusters = ds.col_attrs["Clusters"]
-
-					# def mode(x):
-					# 	return scipy.stats.mode(x)[0][0]
-
-					# majority_labels = npg.aggregate(clusters, labels, func=mode).astype('str')
-
-					# temp = []
-					# for ix in range(ds.shape[1]):
-					# 	if labels[ix] == self.major_class and labels[ix] == majority_labels[clusters[ix]]:
-					# 		temp.append(ix)
-					# logging.info("Keeping " + str(len(temp)) + " cells with majority labels")
-					# if len(temp) == 0:
-					# 	continue
 
 					cells = np.array(temp)
 					if self.major_class == "Oligos":
@@ -134,42 +118,24 @@ class ClusterL2(luigi.Task):
 						if cells.shape[0] > 5000:
 							cells = np.random.choice(cells, 5000, False)
 
-					# Keep track of the gene order in the first file
-					if accessions is None:
-						accessions = ds.row_attrs["Accession"]
-					
-					ordering = np.where(ds.row_attrs["Accession"][None, :] == accessions[:, None])[1]
-					for (ix, selection, vals) in ds.batch_scan(cells=cells, axis=1):
-						ca = {}
-						for key in ds.col_attrs:
-							ca[key] = ds.col_attrs[key][selection]
-						if dsout is None:
-							dsout = loompy.create(out_file, vals[ordering, :], ds.row_attrs, ca)
-						else:
-							dsout.add_columns(vals[ordering, :], ca)
+					for (_, _, view) in ds.scan(items=cells, axis=1, key="Accession"):
+						loompy.create_append(out_file, view.layers, view.ra, view.ca)
 
-			logging.info("Learning the manifold")
-			if self.major_class == "Oligos":
-				ml = cg.ManifoldLearning2(n_genes=self.n_genes, alpha=self.alpha)
-			else:
-				ml = cg.ManifoldLearning2(n_genes=self.n_genes, gtsne=self.gtsne, alpha=self.alpha)
-			(knn, mknn, tsne) = ml.fit(dsout)
-			dsout.col_graphs.KNN = knn
-			dsout.col_graphs.MKNN = mknn
-			dsout.ca._X = tsne[:, 0]
-			dsout.ca._Y = tsne[:, 1]
+			with loompy.connect(out_file) as dsout:
+				logging.info("Learning the manifold")
+				if self.major_class == "Oligos":
+					ml = cg.ManifoldLearning2(n_genes=self.n_genes, alpha=self.alpha)
+				else:
+					ml = cg.ManifoldLearning2(n_genes=self.n_genes, gtsne=self.gtsne, alpha=self.alpha)
+				(knn, mknn, tsne) = ml.fit(dsout)
+				dsout.col_graphs.KNN = knn
+				dsout.col_graphs.MKNN = mknn
+				dsout.ca._X = tsne[:, 0]
+				dsout.ca._Y = tsne[:, 1]
 
-			logging.info("Clustering on the manifold")
-			fname = "L2_" + self.major_class + "_" + self.tissue
-			# (eps_pct, min_pts) = params[fname]
-			# cls = cg.Clustering(method="mknn_louvain", min_pts=10, outliers=True)
-			# labels = cls.fit_predict(dsout)
-			pl = cg.PolishedLouvain()
-			labels = pl.fit_predict(dsout.col_graphs.MKNN, tsne)
-			dsout.ca.Clusters = labels + 1
-			dsout.ca.Outliers = (labels == -1).astype('int')
-			logging.info(f"Found {labels.max() + 1} clusters")
-			# cg.Merger(min_distance=0.1).merge(dsout)
-			# logging.info(f"Merged to {dsout.ca.Clusters.max() + 1} clusters")
-			dsout.close()
-
+				logging.info("Clustering on the manifold")
+				pl = cg.PolishedLouvain()
+				labels = pl.fit_predict(dsout)
+				dsout.ca.Clusters = labels + 1
+				dsout.ca.Outliers = (labels == -1).astype('int')
+				logging.info(f"Found {labels.max() + 1} clusters")

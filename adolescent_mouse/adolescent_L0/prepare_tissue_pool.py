@@ -85,7 +85,7 @@ class PrepareTissuePool(luigi.Task):
 				ds.set_attr("_Valids", valids, axis=0)
 			else:
 				nnz = ds.map([np.count_nonzero], axis=0)[0]
-				valid_genes = np.logical_and(nnz > 20, nnz < ds.shape[1] * 0.6)
+				valid_genes = np.logical_and(nnz > 10, nnz < ds.shape[1] * 0.6)
 				ds.set_attr("_Valid", valid_genes, axis=0)
 
 			logging.info("Marking invalid cells")

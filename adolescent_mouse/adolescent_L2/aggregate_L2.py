@@ -19,7 +19,6 @@ class AggregateL2(luigi.Task):
 	"""
 	major_class = luigi.Parameter()
 	tissue = luigi.Parameter(default="All")
-	n_markers = luigi.IntParameter(default=10)
 	n_auto_genes = luigi.IntParameter(default=6)
 
 	def requires(self) -> List[luigi.Task]:
@@ -33,7 +32,7 @@ class AggregateL2(luigi.Task):
 		with self.output().temporary_path() as out_file:
 			logging.info("Aggregating loom file")
 			with loompy.connect(self.input().fn) as ds:
-				cg.Aggregator(self.n_markers).aggregate(ds, out_file)
+				cg.Aggregator().aggregate(ds, out_file)
 				with loompy.connect(out_file) as dsagg:
 					for ix, score in enumerate(dsagg.col_attrs["ClusterScore"]):
 						logging.info(f"Cluster {ix} score {score:.1f}")
@@ -55,39 +54,42 @@ class AggregateL2(luigi.Task):
 					tissue = self.tissue
 					labels = ds.col_attrs["Clusters"]
 
-					# Figure out which cells should be collected
-					cells: List[int] = []
-					# clusters_seen: List[int] = []  # Clusters for which there was some schedule
-					clusters_seen: Dict[int, str] = {}
-					schedule = pooling_schedule_L3[self.tissue]
+					if self.tissue is "All":
+						dsagg.ca.Bucket = np.array([self.major_class] * dsagg.shape[1])
+					else:
+						# Figure out which cells should be collected
+						cells: List[int] = []
+						# clusters_seen: List[int] = []  # Clusters for which there was some schedule
+						clusters_seen: Dict[int, str] = {}
+						schedule = pooling_schedule_L3[self.tissue]
 
-					# Where to send clusters when no rules match
-					_default_schedule: str = None
-					for aa_tag, sendto in schedule:
-						if aa_tag == "*":
-							_default_schedule = sendto
-
-					# For each cluster in the tissue
-					bucket_list = []
-					for ix, agg_aa in enumerate(dsagg.ca.AutoAnnotation):
-						# For each rule in the schedule
+						# Where to send clusters when no rules match
+						_default_schedule: str = None
 						for aa_tag, sendto in schedule:
-							if aa_tag in agg_aa.split(","):
-								if ix in clusters_seen:
-									logging.info(f"{tissue}/{ix}/{agg_aa}: {aa_tag} -> {sendto} (overruled by '{clusters_seen[ix]}')")
+							if aa_tag == "*":
+								_default_schedule = sendto
+
+						# For each cluster in the tissue
+						bucket_list = []
+						for ix, agg_aa in enumerate(dsagg.ca.AutoAnnotation):
+							# For each rule in the schedule
+							for aa_tag, sendto in schedule:
+								if aa_tag in agg_aa.split(","):
+									if ix in clusters_seen:
+										logging.info(f"{tissue}/{ix}/{agg_aa}: {aa_tag} -> {sendto} (overruled by '{clusters_seen[ix]}')")
+									else:
+										clusters_seen[ix] = f"{aa_tag} -> {sendto}"
+										logging.info(f"{tissue}/{ix}/{agg_aa}: {aa_tag} -> {sendto}")
+										bucket_list.append(sendto)
+							if ix not in clusters_seen:
+								if _default_schedule is None:
+									logging.info(f"{tissue}/{ix}/{agg_aa}: No matching rule")
+									bucket_list.append("Excluded")
 								else:
-									clusters_seen[ix] = f"{aa_tag} -> {sendto}"
-									logging.info(f"{tissue}/{ix}/{agg_aa}: {aa_tag} -> {sendto}")
-									bucket_list.append(sendto)
-						if ix not in clusters_seen:
-							if _default_schedule is None:
-								logging.info(f"{tissue}/{ix}/{agg_aa}: No matching rule")
-								bucket_list.append("Excluded")
-							else:
-								clusters_seen[ix] = f"{aa_tag} -> {_default_schedule}"
-								logging.info(f"{tissue}/{ix}/{agg_aa}: {aa_tag} -> {_default_schedule}")
-								bucket_list.append(_default_schedule)
-					dsagg.ca.Bucket = np.array(bucket_list)
+									clusters_seen[ix] = f"{aa_tag} -> {_default_schedule}"
+									logging.info(f"{tissue}/{ix}/{agg_aa}: {aa_tag} -> {_default_schedule}")
+									bucket_list.append(_default_schedule)
+						dsagg.ca.Bucket = np.array(bucket_list)
 
 
 pooling_schedule_L3 = {
@@ -96,11 +98,11 @@ pooling_schedule_L3 = {
 		("MSN-D1", "Striatum_MSN"),
 		("MSN-D2", "Striatum_MSN"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "Forebrain_Inhibitory"),
+		("@GABA", "Telencephalon_Inhibitory"),
 		("DG-GC", "Brain_Granule"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 		("@NBL", "Brain_Neuroblasts")
 	],
 	"Cortex2": [
@@ -108,11 +110,11 @@ pooling_schedule_L3 = {
 		("MSN-D1", "Striatum_MSN"),
 		("MSN-D2", "Striatum_MSN"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "Forebrain_Inhibitory"),
+		("@GABA", "Telencephalon_Inhibitory"),
 		("DG-GC", "Brain_Granule"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 		("@NBL", "Brain_Neuroblasts")
 	],
 	"Cortex3": [
@@ -120,11 +122,11 @@ pooling_schedule_L3 = {
 		("MSN-D1", "Striatum_MSN"),
 		("MSN-D2", "Striatum_MSN"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "Forebrain_Inhibitory"),
+		("@GABA", "Telencephalon_Inhibitory"),
 		("DG-GC", "Brain_Granule"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 		("@NBL", "Brain_Neuroblasts")
 	],
 	"Hippocampus": [
@@ -132,23 +134,23 @@ pooling_schedule_L3 = {
 		("MSN-D1", "Striatum_MSN"),
 		("MSN-D2", "Striatum_MSN"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "Forebrain_Inhibitory"),
+		("@GABA", "Telencephalon_Inhibitory"),
 		("DG-GC", "Brain_Granule"),
 		("@NBL", "Brain_Neuroblasts"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 	],
 	"StriatumDorsal": [
 		("@CHOL", "Brain_CholinergicMonoaminergic"),
 		("MSN-D1", "Striatum_MSN"),
 		("MSN-D2", "Striatum_MSN"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "Forebrain_Inhibitory"),
+		("@GABA", "Telencephalon_Inhibitory"),
 		("DG-GC", "Brain_Granule"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 		("@NBL", "Brain_Neuroblasts")
 	],
 	"StriatumVentral": [
@@ -156,11 +158,11 @@ pooling_schedule_L3 = {
 		("MSN-D1", "Striatum_MSN"),
 		("MSN-D2", "Striatum_MSN"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "Forebrain_Inhibitory"),
+		("@GABA", "Telencephalon_Inhibitory"),
 		("DG-GC", "Brain_Granule"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 		("@NBL", "Brain_Neuroblasts")
 	],
 	"Amygdala": [
@@ -169,20 +171,20 @@ pooling_schedule_L3 = {
 		("MSN-D2", "Striatum_MSN"),
 		("@CHOL", "Brain_CholinergicMonoaminergic"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "Forebrain_Inhibitory"),
+		("@GABA", "Telencephalon_Inhibitory"),
 		("DG-GC", "Brain_Granule"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 		("@NBL", "Brain_Neuroblasts")
 	],
 	"Olfactory": [
 		("MSN-D1", "Striatum_MSN"),
 		("MSN-D2", "Striatum_MSN"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@VGLUT1", "Forebrain_Excitatory"),
-		("@VGLUT2", "Forebrain_Excitatory"),
-		("@VGLUT3", "Forebrain_Excitatory"),
+		("@VGLUT1", "Telencephalon_Excitatory"),
+		("@VGLUT2", "Telencephalon_Excitatory"),
+		("@VGLUT3", "Telencephalon_Excitatory"),
 		("@NBL", "Brain_Neuroblasts"),
 		("*", "Olfactory_Inhibitory")
 	],
@@ -199,10 +201,10 @@ pooling_schedule_L3 = {
 		("@TRH", "Hypothalamus_Peptidergic"),
 		("@CHOL", "Brain_CholinergicMonoaminergic"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@VGLUT1", "DiMesencephalon_Excitatory"),
-		("@VGLUT2", "DiMesencephalon_Excitatory"),
-		("@VGLUT3", "DiMesencephalon_Excitatory"),
-		("@GABA", "DiMesencephalon_Inhibitory")
+		("@VGLUT1", "Diencephalon_Excitatory"),
+		("@VGLUT2", "Diencephalon_Excitatory"),
+		("@VGLUT3", "Diencephalon_Excitatory"),
+		("@GABA", "Diencephalon_Inhibitory")
 	],
 	"MidbrainDorsal": [
 		("MSN-D1", "Striatum_MSN"),
@@ -211,10 +213,10 @@ pooling_schedule_L3 = {
 		("@DA", "Brain_CholinergicMonoaminergic"),
 		("@CHOL", "Brain_CholinergicMonoaminergic"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "DiMesencephalon_Inhibitory"),
-		("@VGLUT1", "DiMesencephalon_Excitatory"),
-		("@VGLUT2", "DiMesencephalon_Excitatory"),
-		("@VGLUT3", "DiMesencephalon_Excitatory")
+		("@GABA", "Mesencephalon_Inhibitory"),
+		("@VGLUT1", "Mesencephalon_Excitatory"),
+		("@VGLUT2", "Mesencephalon_Excitatory"),
+		("@VGLUT3", "Mesencephalon_Excitatory")
 	],
 	"MidbrainVentral": [
 		("MSN-D1", "Striatum_MSN"),
@@ -223,10 +225,10 @@ pooling_schedule_L3 = {
 		("@DA", "Brain_CholinergicMonoaminergic"),
 		("@CHOL", "Brain_CholinergicMonoaminergic"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "DiMesencephalon_Inhibitory"),
-		("@VGLUT1", "DiMesencephalon_Excitatory"),
-		("@VGLUT2", "DiMesencephalon_Excitatory"),
-		("@VGLUT3", "DiMesencephalon_Excitatory")
+		("@GABA", "Mesencephalon_Inhibitory"),
+		("@VGLUT1", "Mesencephalon_Excitatory"),
+		("@VGLUT2", "Mesencephalon_Excitatory"),
+		("@VGLUT3", "Mesencephalon_Excitatory")
 	],
 	"Thalamus": [
 		("MSN-D1", "Striatum_MSN"),
@@ -235,10 +237,10 @@ pooling_schedule_L3 = {
 		("@DA", "Brain_CholinergicMonoaminergic"),
 		("@CHOL", "Brain_CholinergicMonoaminergic"),
 		("@NIPC", "Brain_Neuroblasts"),
-		("@GABA", "DiMesencephalon_Inhibitory"),
-		("@VGLUT1", "DiMesencephalon_Excitatory"),
-		("@VGLUT2", "DiMesencephalon_Excitatory"),
-		("@VGLUT3", "DiMesencephalon_Excitatory")
+		("@GABA", "Diencephalon_Inhibitory"),
+		("@VGLUT1", "Diencephalon_Excitatory"),
+		("@VGLUT2", "Diencephalon_Excitatory"),
+		("@VGLUT3", "Diencephalon_Excitatory")
 	],
 	"Cerebellum": [
 		("@NIPC", "Brain_Neuroblasts"),

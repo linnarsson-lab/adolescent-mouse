@@ -18,7 +18,6 @@ class AggregateL1(luigi.Task):
 	Aggregate all clusters in a new Loom file
 	"""
 	tissue = luigi.Parameter()
-	n_markers = luigi.IntParameter(default=10)
 	n_auto_genes = luigi.IntParameter(default=6)
 
 	def requires(self) -> List[luigi.Task]:
@@ -31,7 +30,7 @@ class AggregateL1(luigi.Task):
 		logging = cg.logging(self)
 		with self.output().temporary_path() as out_file:
 			with loompy.connect(self.input().fn) as ds:
-				cg.Aggregator(self.n_markers).aggregate(ds, out_file)
+				cg.Aggregator().aggregate(ds, out_file)
 				with loompy.connect(out_file) as dsagg:
 					logging.info("Computing auto-annotation")
 					aa = cg.AutoAnnotator(root=am.paths().autoannotation)

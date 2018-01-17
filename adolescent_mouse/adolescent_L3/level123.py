@@ -19,19 +19,21 @@ class Level123(luigi.WrapperTask):
 			'Sensory_Neurons',
 			'Sympathetic_Neurons',
 			'Enteric_Neurons',
-			'DiMesencephalon_Excitatory',
+			'Mesencephalon_Excitatory',
+			'Diencephalon_Excitatory',
 			'Hindbrain_Inhibitory',
 			'SpinalCord_Inhibitory',
 			'Brain_Granule',
 			'Brain_CholinergicMonoaminergic',
-			'DiMesencephalon_Inhibitory',
+			'Mesencephalon_Inhibitory',
+			'Diencephalon_Inhibitory',
 			'Striatum_MSN',
 			'Hypothalamus_Peptidergic',
-			'Forebrain_Excitatory',
+			'Telencephalon_Excitatory',
 			'Brain_Neuroblasts',
 			'Hindbrain_Excitatory',
 			'SpinalCord_Excitatory',
-			'Forebrain_Inhibitory',
+			'Telencephalon_Inhibitory',
 			'Olfactory_Inhibitory'
 		]
 		tissues = cg.PoolSpec().tissues_for_project("Adolescent")
@@ -42,6 +44,7 @@ class Level123(luigi.WrapperTask):
 
 		for cls in classes:
 			yield am.ExportL2(tissue="All", major_class=cls)
+			yield am.ExportL3(target=cls)
 
 		for target in targets:
 			yield am.ExportL3(target=target)

@@ -9,7 +9,7 @@ import luigi
 import adolescent_mouse as am
 
 
-class AllLevels(luigi.WrapperTask):
+class Level4(luigi.WrapperTask):
 	"""
 	Luigi Task to run all analyses
 	"""
@@ -19,33 +19,27 @@ class AllLevels(luigi.WrapperTask):
 			'Sensory_Neurons',
 			'Sympathetic_Neurons',
 			'Enteric_Neurons',
-			'DiMesencephalon_Excitatory',
+			'Mesencephalon_Excitatory',
+			'Diencephalon_Excitatory',
 			'Hindbrain_Inhibitory',
 			'SpinalCord_Inhibitory',
 			'Brain_Granule',
 			'Brain_CholinergicMonoaminergic',
-			'DiMesencephalon_Inhibitory',
+			'Mesencephalon_Inhibitory',
+			'Diencephalon_Inhibitory',
 			'Striatum_MSN',
 			'Hypothalamus_Peptidergic',
-			'Forebrain_Excitatory',
+			'Telencephalon_Excitatory',
 			'Brain_Neuroblasts',
 			'Hindbrain_Excitatory',
 			'SpinalCord_Excitatory',
-			'Forebrain_Inhibitory',
+			'Telencephalon_Inhibitory',
 			'Olfactory_Inhibitory'
 		]
-		tissues = cg.PoolSpec().tissues_for_project("Adolescent")
 		classes = ["Oligos", "Ependymal", "Astrocytes", "Vascular", "Immune", "PeripheralGlia"]
-		for tissue in tissues:
-			yield am.ExportL1(tissue=tissue)
-			yield am.ExportL2(tissue=tissue, major_class="Neurons")
 
 		for cls in classes:
-			yield am.ExportL2(tissue="All", major_class=cls)
-			yield am.ExportL4(target=cls + "_All")
+			yield am.ExportL4(target=cls)
 
 		for target in targets:
-			yield am.ExportL3(target=target)
 			yield am.ExportL4(target=target)
-
-		yield am.ExportL5()
