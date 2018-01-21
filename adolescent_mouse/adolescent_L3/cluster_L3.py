@@ -87,7 +87,7 @@ class ClusterL3(luigi.Task):
 					cells = np.sort(np.array(cells))
 					cells_found = True
 					for (ix, selection, view) in ds.scan(items=cells, axis=1, key="Accession"):
-						loompy.create(out_file, view.layers, view.ra, view.ca)
+						loompy.create_append(out_file, view.layers, view.ra, view.ca)
 
 			if not cells_found:
 				raise ValueError(f"No cells matched any schedule for {self.target}")
