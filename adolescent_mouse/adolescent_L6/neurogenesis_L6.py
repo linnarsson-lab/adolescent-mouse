@@ -37,13 +37,13 @@ class NeurogenesisL6(luigi.Task):
 				celltypes = [
 					"CBNBL2",
 					"CBNBL1",
-					"SZNBL1",
+					"SZNBL",
 					"OBNBL1",
 					"OBNBL2",
 					"DETPH",
 					"DGNBL2",
 					"DGNBL1",
-					"SZNBL2",
+					"SEPNBL",
 					"OBNBL3",
 					"ACTE1",
 					"ACBG",
@@ -76,8 +76,8 @@ class NeurogenesisL6(luigi.Task):
 				fig = plt.figure(figsize=(3, 3))
 				ax = fig.add_axes([0, 0, 1, 1])
 				ax.axis('off')
-				lc = LineCollection(zip(tsne[mknn.row], tsne[mknn.col]), linewidths=0.25, zorder=0, color='grey', alpha=0.1)
-				ax.add_collection(lc)
+				# lc = LineCollection(zip(tsne[mknn.row], tsne[mknn.col]), linewidths=0.25, zorder=0, color='grey', alpha=0.1)
+				# ax.add_collection(lc)
 				colors = cg.colorize(np.unique(ds.ca.ClusterName))
 				ix = 0
 				for ct in np.unique(ds.ca.ClusterName):
