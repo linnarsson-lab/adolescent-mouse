@@ -1,3 +1,7 @@
+# Plots
+/notebooks/*.pdf
+/notebooks/*.png
+
 # Mac
 *.DS_Store/
 test/
