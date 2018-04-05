@@ -2,6 +2,10 @@
 
 Analysis pipeline for the adolescent mouse nervous system project
 
+## What's this?
+
+This is the public release of the analysis pipeline used in our paper "Molecular architecture of the mouse nervous system", currently in review. We provide this repository in the interest of transparency and reproducibility. Unfortunately, we cannot provide support on running the pipeline in your own environment. However, the guide below can be used as a starting point.
+
 ## Installation
 
 1. Install [luigi](https://luigi.readthedocs.io/en/stable/), [cytograph](https://github.com/linnarsson-lab/cytograph) and [loompy](https://github.com/linnarsson-lab/loompy)
@@ -45,8 +49,6 @@ loom_samples/
     metadata/
         metadata.xlsx
 ```
-
-**Note:** On monod, a samples folder is available at `/data/proj/chromium/`. Please use this directly instead of making a copy.
 
 **Note:** Instead of sample files directly in the top-level folder, sample files can also be in subfolders named after the sample ID, or in a sub-folder of such a subfolder, named `velocyto`. Thus, these are all equivalent:
 
