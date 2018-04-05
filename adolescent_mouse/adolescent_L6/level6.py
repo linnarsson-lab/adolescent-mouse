@@ -25,6 +25,8 @@ class Level6(luigi.WrapperTask):
 			yield am.ExportL6(rank=2, taxon=taxon)
 		for taxon in list(set(taxonomy["TaxonomyRank3"])):
 			yield am.ExportL6(rank=3, taxon=taxon)
+#		for taxon in list(set(taxonomy["TaxonomyRank4"])):
+#			yield am.ExportL6(rank=4, taxon=taxon)
 		for rank in [1, 2, 3, 4]:
 			yield am.ExportByTaxonL6(rank=rank)
 		yield am.ExportL5()

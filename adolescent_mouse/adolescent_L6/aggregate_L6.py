@@ -51,7 +51,7 @@ class AggregateL6(luigi.Task):
 				"Description": "first",
 				"Location_based_on": "first",
 				"Neurotransmitter": "first",
-				"ClusterName": "first",
+				"LeafOrder": "first",
 				"Comment": "first",
 				"ClusterName": "first",
 				"TaxonomyRank1": "first",
