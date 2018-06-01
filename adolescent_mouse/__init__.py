@@ -5,4 +5,6 @@ from .adolescent_L3 import *
 from .adolescent_L4 import *
 from .adolescent_L5 import *
 from .adolescent_L6 import *
+from .cytograph2_L1 import *
+from .cytograph2_L2 import *
 from .path_config import paths

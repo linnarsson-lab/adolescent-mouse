@@ -58,7 +58,7 @@ class ClusterL1(luigi.Task):
 				ds.ca._X = tsne[:, 0]
 				ds.ca._Y = tsne[:, 1]
 
-				logging.info("Clustering on the manifold")
+				logging.info("Clustering on the manifold L1")
 				pl = cg.PolishedLouvain()
 				labels = pl.fit_predict(ds)
 				ds.ca.Clusters = labels + 1
