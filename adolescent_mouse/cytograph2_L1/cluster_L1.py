@@ -48,4 +48,4 @@ class ClusterL1C2(luigi.Task):
 			with loompy.connect(out_file) as ds:
 				logging.info(f"Found {ds.shape[1]} valid cells")
 				logging.info("Learning the manifold")
-				cg.Cytograph2(n_factors==100, max_iter=100).fit(ds)
+				cg.Cytograph2(n_factors=100, max_iter=100).fit(ds)
