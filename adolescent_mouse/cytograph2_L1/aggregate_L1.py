@@ -35,7 +35,7 @@ class AggregateL1C2(luigi.Task):
 							log=self.log, normalize=self.normalize, accel=self.accel)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(am.paths().build, f"L1_{self.tissue}_nf={self.n_factors}_a={self.a}_b={self.b}_c={self.c}_d={self.d}_log={self.log}_normalize={self.normalize}_accel={self.accel}.agg.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, f"L1_{self.tissue}_nfactors={self.n_factors}_k={self.k}_ksmoothing={self.k_smoothing}_a={self.a}_b={self.b}_c={self.c}_d={self.d}_log={self.log}_normalize={self.normalize}_accel={self.accel}.agg.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
