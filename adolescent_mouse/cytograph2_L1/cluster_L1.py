@@ -50,7 +50,7 @@ class ClusterL1C2(luigi.Task):
 	def run(self) -> None:
 		logging = cg.logging(self)
 		with self.output().temporary_path() as out_file:
-			with loompy.connect(self.input().fn, mode="r+") as ds:
+			with loompy.connect(self.input().fn, mode="r") as ds:
 				logging.info("Collecting valid cells")
 				for (ix, selection, view) in ds.scan(items=np.where(ds.col_attrs["_Valid"] == 1)[0], axis=1, key="Accession"):
 					loompy.create_append(out_file, view.layers, view.ra, view.ca)

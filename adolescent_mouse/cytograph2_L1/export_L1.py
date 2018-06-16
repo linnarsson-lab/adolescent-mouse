@@ -45,7 +45,7 @@ class ExportL1C2(luigi.Task):
 		with self.output().temporary_path() as out_dir:
 			if not os.path.exists(out_dir):
 				os.mkdir(out_dir)
-			with loompy.connect(self.input()[0].fn, mode="r+") as dsagg:
+			with loompy.connect(self.input()[0].fn, mode="r") as dsagg:
 				logging.info("Exporting tab files")
 				dsagg.export(os.path.join(out_dir, "L1_" + self.tissue + "_expression.tab"))
 				dsagg.export(os.path.join(out_dir, "L1_" + self.tissue + "_enrichment.tab"), layer="enrichment")
