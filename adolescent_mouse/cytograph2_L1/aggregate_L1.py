@@ -18,13 +18,24 @@ class AggregateL1C2(luigi.Task):
 	Aggregate all clusters in a new Loom file
 	"""
 	tissue = luigi.Parameter()
-	n_auto_genes = luigi.IntParameter(default=6)
+	a = luigi.FloatParameter(default=1)
+	b = luigi.FloatParameter(default=5)
+	c = luigi.FloatParameter(default=1)
+	d = luigi.FloatParameter(default=5)
+	n_factors = luigi.IntParameter(default=100)
+	k_smoothing = luigi.IntParameter(default=10)
+	k = luigi.IntParameter(default=25)
+	log = luigi.BoolParameter(default=False)
+	normalize = luigi.BoolParameter(default=False)
+	accel = luigi.BoolParameter(default=False)
 
 	def requires(self) -> List[luigi.Task]:
-		return am.ClusterL1C2(tissue=self.tissue)
+		return am.ClusterL1C2(tissue=self.tissue, a=self.a, b=self.b, c=self.c, d=self.d, 
+							n_factors=self.n_factors, k_smoothing=self.k_smoothing, k=self.k, 
+							log=self.log, normalize=self.normalize, accel=self.accel)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(am.paths().build, "L1_" + self.tissue + ".agg.loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, f"L1_{self.tissue}_nf={self.n_factors}_a={self.a}_b={self.b}_c={self.c}_d={self.d}_log={self.log}_normalize={self.normalize}_accel={self.accel}.agg.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -39,7 +50,7 @@ class AggregateL1C2(luigi.Task):
 
 					logging.info("Computing auto-auto-annotation")
 					n_clusters = dsagg.shape[1]
-					(selected, selectivity, specificity, robustness) = cg.AutoAutoAnnotator(n_genes=self.n_auto_genes).fit(dsagg)
+					(selected, selectivity, specificity, robustness) = cg.AutoAutoAnnotator(n_genes=6).fit(dsagg)
 					dsagg.set_attr("MarkerGenes", np.array([" ".join(ds.ra.Gene[selected[:, ix]]) for ix in np.arange(n_clusters)]), axis=1)
 					np.set_printoptions(precision=1, suppress=True)
 					dsagg.set_attr("MarkerSelectivity", np.array([str(selectivity[:, ix]) for ix in np.arange(n_clusters)]), axis=1)

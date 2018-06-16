@@ -15,15 +15,29 @@ class ExportL1C2(luigi.Task):
 	Luigi Task to export summary files
 	"""
 	tissue = luigi.Parameter()
+	a = luigi.FloatParameter(default=1)
+	b = luigi.FloatParameter(default=5)
+	c = luigi.FloatParameter(default=1)
+	d = luigi.FloatParameter(default=5)
+	n_factors = luigi.IntParameter(default=100)
+	k_smoothing = luigi.IntParameter(default=10)
+	k = luigi.IntParameter(default=25)
+	log = luigi.BoolParameter(default=False)
+	normalize = luigi.BoolParameter(default=False)
+	accel = luigi.BoolParameter(default=False)
 
 	def requires(self) -> List[luigi.Task]:
 		return [
-			am.AggregateL1C2(tissue=self.tissue),
-			am.ClusterL1C2(tissue=self.tissue)
+			am.AggregateL1C2(tissue=self.tissue, a=self.a, b=self.b, c=self.c, d=self.d, 
+							n_factors=self.n_factors, k_smoothing=self.k_smoothing, k=self.k, 
+							log=self.log, normalize=self.normalize, accel=self.accel),
+			am.ClusterL1C2(tissue=self.tissue, a=self.a, b=self.b, c=self.c, d=self.d, 
+							n_factors=self.n_factors, k_smoothing=self.k_smoothing, k=self.k, 
+							log=self.log, normalize=self.normalize, accel=self.accel)
 		]
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(am.paths().build, "L1_" + self.tissue + "_exported"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, f"L1_{self.tissue}_nf={self.n_factors}_a={self.a}_b={self.b}_c={self.c}_d={self.d}_log={self.log}_normalize={self.normalize}_accel={self.accel}.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self, True)

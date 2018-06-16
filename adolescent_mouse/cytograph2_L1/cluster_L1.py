@@ -30,12 +30,22 @@ class ClusterL1C2(luigi.Task):
 	Level 1 clustering
 	"""
 	tissue = luigi.Parameter()
+	a = luigi.FloatParameter(default=1)
+	b = luigi.FloatParameter(default=5)
+	c = luigi.FloatParameter(default=1)
+	d = luigi.FloatParameter(default=5)
+	n_factors = luigi.IntParameter(default=100)
+	k_smoothing = luigi.IntParameter(default=10)
+	k = luigi.IntParameter(default=25)
+	log = luigi.BoolParameter(default=False)
+	normalize = luigi.BoolParameter(default=False)
+	accel = luigi.BoolParameter(default=False)
 
 	def requires(self) -> luigi.Task:
 		return am.PrepareTissuePool(tissue=self.tissue)
 
 	def output(self) -> luigi.Target:
-		return luigi.LocalTarget(os.path.join(am.paths().build, "L1_" + self.tissue + ".loom"))
+		return luigi.LocalTarget(os.path.join(am.paths().build, f"L1_{self.tissue}_nf={self.n_factors}_a={self.a}_b={self.b}_c={self.c}_d={self.d}_log={self.log}_normalize={self.normalize}_accel={self.accel}.loom"))
 
 	def run(self) -> None:
 		logging = cg.logging(self)
@@ -48,4 +58,4 @@ class ClusterL1C2(luigi.Task):
 			with loompy.connect(out_file) as ds:
 				logging.info(f"Found {ds.shape[1]} valid cells")
 				logging.info("Learning the manifold")
-				cg.Cytograph2(n_factors=100, max_iter=100).fit(ds)
+				cg.Cytograph2(accel=self.accel, log=self.log, normalize=self.normalize, a=self.a, b=self.b, c=self.c, d=self.d, k=self.k, k_smoothing=self.k_smoothing, n_factors=self.n_factors, max_iter=200).fit(ds)
