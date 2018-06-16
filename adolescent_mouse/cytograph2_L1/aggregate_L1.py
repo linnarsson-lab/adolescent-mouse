@@ -40,7 +40,7 @@ class AggregateL1C2(luigi.Task):
 	def run(self) -> None:
 		logging = cg.logging(self)
 		with self.output().temporary_path() as out_file:
-			with loompy.connect(self.input().fn, mode="r") as ds:
+			with loompy.connect(self.input().fn, mode="r+") as ds:
 				cg.Aggregator().aggregate(ds, out_file)
 				with loompy.connect(out_file) as dsagg:
 					logging.info("Computing auto-annotation")
