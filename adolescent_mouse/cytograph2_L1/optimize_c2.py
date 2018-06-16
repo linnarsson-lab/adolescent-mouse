@@ -16,12 +16,12 @@ class OptimizeC2(luigi.WrapperTask):
 	tissue = luigi.Parameter()
 
 	def requires(self) -> Iterator[luigi.Task]:
-		for (a, b) in [(0.3, 0.3), (0.3, 5), (0.3, 10), (1, 10)]:
-			for (c, d) in [(0.3, 0.3), (0.3, 5), (0.3, 10), (1, 10)]:
+		for (a, b) in [(1, 10)]:
+			for (c, d) in [(1, 10), (1, 20), (2, 10), (5, 10)]:
 				for accel in [True, False]:
-					for normalize in [True, False]:
+					for normalize in [True]:
 						for k_smoothing in [10]:
-							for k in [25, 100]:
+							for k in [10, 25]:
 								for n_factors in [100]:
 									yield am.ExportL1C2(tissue=self.tissue, a=a, b=b, c=c, d=d, 
 										n_factors=n_factors, k_smoothing=k_smoothing, k=k, 
