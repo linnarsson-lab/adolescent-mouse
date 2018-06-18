@@ -23,7 +23,7 @@ class OptimizeC2(luigi.WrapperTask):
 						for accel in [False]:
 							for normalize in [True]:
 								for k_smoothing in [5]:
-									for k in [25]:
+									for k in [10, 25]:
 										for n_factors in [100]:
 											yield am.ExportL1C2(tissue=self.tissue, a=a, b=b, c=c, d=d, 
 												n_factors=n_factors, k_smoothing=k_smoothing, k=k, 
