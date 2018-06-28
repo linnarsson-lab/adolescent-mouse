@@ -31,14 +31,14 @@ class ClusterL1C2(luigi.Task):
 	"""
 	tissue = luigi.Parameter()
 	a = luigi.FloatParameter(default=1)
-	b = luigi.FloatParameter(default=5)
+	b = luigi.FloatParameter(default=10)
 	c = luigi.FloatParameter(default=1)
-	d = luigi.FloatParameter(default=5)
+	d = luigi.FloatParameter(default=10)
 	n_factors = luigi.IntParameter(default=100)
-	k_smoothing = luigi.IntParameter(default=10)
-	k = luigi.IntParameter(default=25)
-	log = luigi.BoolParameter(default=False)
-	normalize = luigi.BoolParameter(default=False)
+	k_smoothing = luigi.IntParameter(default=100)
+	k = luigi.IntParameter(default=10)
+	log = luigi.BoolParameter(default=True)
+	normalize = luigi.BoolParameter(default=True)
 	accel = luigi.BoolParameter(default=False)
 
 	def requires(self) -> luigi.Task:
