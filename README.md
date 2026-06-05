@@ -3,10 +3,21 @@
 This is the public release of the analysis pipeline used in our paper ["Molecular architecture of the mouse nervous system"](https://www.cell.com/cell/fulltext/S0092-8674(18)30789-X?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS009286741830789X%3Fshowall%3Dtrue).
 We provide this repository in the interest of transparency and reproducibility. Unfortunately, we cannot provide support on running the pipeline in your own environment. However, the guide below can be used as a starting point.
 
-## Expression matrix
+## Expression matrices
 
-The final data can be downloaded in [anndata](https://anndata.scverse.org/en/stable/) h5ad format here: [adult_mouse_nervous_system.h5ad](https://www.dropbox.com/scl/fi/ojvdwix4rpj04b2id4897/adult_mouse_nervous_system.h5ad?rlkey=7d11gw1hv7xbxdfaf6zwxs7hh&st=8158ef8y&dl=1
-)
+Expression values and metadata per cell: [adult_mouse_l5_all_rev1.loom.gz](https://www.dropbox.com/scl/fi/ofuyoixz54sx5fursl2ms/adult_mouse_l5_all_rev1.loom.gz?rlkey=kfbfbmrjpauf0ck65i3b3ixs3&st=1w6ntgxu&dl=1).
+
+Alternative download in [anndata](https://anndata.scverse.org/en/stable/) h5ad format: [adult_mouse_nervous_system.h5ad](https://www.dropbox.com/scl/fi/ojvdwix4rpj04b2id4897/adult_mouse_nervous_system.h5ad?rlkey=7d11gw1hv7xbxdfaf6zwxs7hh&st=8158ef8y&dl=1).
+
+Note that there was an issue with the original file in which many samples had their barcode truncated with two bases at the 5' end.
+The revised loom file above has corrected all cases where the correct barcode can be uniquely matched.
+In 797 cases the matching is not unique and the two 5' bases have been set to 'XX'.
+
+For the original loom file without corrections: [adult_mouse_l5_all.loom.gz](https://www.dropbox.com/scl/fi/oedd7qe0cxicmsv3zvwe8/adult_mouse_l5_all.loom.gz?rlkey=am4d9jpu8ciw3ii5alkn4cb7s&st=j27gl5h5&dl=1).
+
+Expression values and metadata per cluster: [adult_mouse_l5_all.agg.loom.gz](https://www.dropbox.com/scl/fi/epenb1cwahwzkdi51b47r/adult_mouse_l5_all.agg.loom.gz?rlkey=v4p7raonlsagk887hcm479h3y&st=o57pr60l&dl=1).
+
+See <a href="http://loompy.org">loompy.org</a> for a description of the loom file format.
 
 ## Installation
 
