@@ -21,7 +21,7 @@ See <a href="http://loompy.org">loompy.org</a> for a description of the loom fil
 
 ## EEL spatial transcriptomics data
 
-Images are available here: [EEL-FISH data](https://figshare.com/projects/Scalable_in_situ_single-cell_profiling_by_electrophoretic_capture_of_mRNA_using_EEL_FISH/143616.)
+Images are available here: [EEL-FISH data](https://figshare.com/projects/Scalable_in_situ_single-cell_profiling_by_electrophoretic_capture_of_mRNA_using_EEL_FISH/143616)
 
 ## Installation
 
