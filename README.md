@@ -1,10 +1,12 @@
 # adolescent-mouse
 
-Analysis pipeline for the adolescent mouse nervous system project
+This is the public release of the analysis pipeline used in our paper ["Molecular architecture of the mouse nervous system"](https://www.cell.com/cell/fulltext/S0092-8674(18)30789-X?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS009286741830789X%3Fshowall%3Dtrue).
+We provide this repository in the interest of transparency and reproducibility. Unfortunately, we cannot provide support on running the pipeline in your own environment. However, the guide below can be used as a starting point.
 
-## What's this?
+## Expression matrix
 
-This is the public release of the analysis pipeline used in our paper "Molecular architecture of the mouse nervous system", currently in review. We provide this repository in the interest of transparency and reproducibility. Unfortunately, we cannot provide support on running the pipeline in your own environment. However, the guide below can be used as a starting point.
+The final data can be downloaded in [anndata](https://anndata.scverse.org/en/stable/) h5ad format from [Dropbox](https://www.dropbox.com/scl/fi/ojvdwix4rpj04b2id4897/adult_mouse_nervous_system.h5ad?rlkey=7d11gw1hv7xbxdfaf6zwxs7hh&st=8158ef8y&dl=0
+)
 
 ## Installation
 
