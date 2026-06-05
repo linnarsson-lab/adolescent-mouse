@@ -19,14 +19,6 @@ Expression values and metadata per cluster: [adult_mouse_l5_all.agg.loom.gz](htt
 
 See <a href="http://loompy.org">loompy.org</a> for a description of the loom file format.
 
-## EEL spatial transcriptomics data
-
-Images are available here: [EEL-FISH data](https://figshare.com/projects/Scalable_in_situ_single-cell_profiling_by_electrophoretic_capture_of_mRNA_using_EEL_FISH/143616)
-
-The raw image data is large, around 20 TB for all datasets. If you want to have access to any or all datasets please contact us. The best way is probably by shipping a hard drive.
-
-If you require any other raw data or have questions about the files, feel free to contact us.
-
 ## Installation
 
 1. Install [luigi](https://luigi.readthedocs.io/en/stable/), [cytograph](https://github.com/linnarsson-lab/cytograph) and [loompy](https://github.com/linnarsson-lab/loompy)
