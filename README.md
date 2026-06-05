@@ -5,7 +5,7 @@ We provide this repository in the interest of transparency and reproducibility. 
 
 ## Expression matrix
 
-The final data can be downloaded in [anndata](https://anndata.scverse.org/en/stable/) h5ad format from [Dropbox](https://www.dropbox.com/scl/fi/ojvdwix4rpj04b2id4897/adult_mouse_nervous_system.h5ad?rlkey=7d11gw1hv7xbxdfaf6zwxs7hh&st=8158ef8y&dl=0
+The final data can be downloaded in [anndata](https://anndata.scverse.org/en/stable/) h5ad format here: [adult_mouse_nervous_system.h5ad](https://www.dropbox.com/scl/fi/ojvdwix4rpj04b2id4897/adult_mouse_nervous_system.h5ad?rlkey=7d11gw1hv7xbxdfaf6zwxs7hh&st=8158ef8y&dl=1
 )
 
 ## Installation
