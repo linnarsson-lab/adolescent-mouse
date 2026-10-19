@@ -3,6 +3,12 @@
 This is the public release of the analysis pipeline used in our paper ["Molecular architecture of the mouse nervous system"](https://www.cell.com/cell/fulltext/S0092-8674(18)30789-X?_returnURL=https%3A%2F%2Flinkinghub.elsevier.com%2Fretrieve%2Fpii%2FS009286741830789X%3Fshowall%3Dtrue).
 We provide this repository in the interest of transparency and reproducibility. Unfortunately, we cannot provide support on running the pipeline in your own environment. However, the guide below can be used as a starting point.
 
+## Dataset explorer on CELLxGENE
+
+You can now explore the dataset on CELLxGENE [here](https://cellxgene.cziscience.com/collections/3d79a8b3-568d-41aa-b202-7421529b223d).
+
+Note that this dataset has been further curated, and a number of cells that had issues or actually were duplicates in the original dataset have been deleted.
+
 ## Expression matrices
 
 Expression values and metadata per cell: [adult_mouse_l5_all_rev1.loom.gz](https://www.dropbox.com/scl/fi/ofuyoixz54sx5fursl2ms/adult_mouse_l5_all_rev1.loom.gz?rlkey=kfbfbmrjpauf0ck65i3b3ixs3&st=1w6ntgxu&dl=1).
